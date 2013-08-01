@@ -5,7 +5,7 @@ CFLAGS := -I $(MAINPATH)/include -c
 LDFLAGS=-lcurl
 
 ifdef DEBUG
-CFLAGS += -g
+CFLAGS += -g -O1
 endif
 
 

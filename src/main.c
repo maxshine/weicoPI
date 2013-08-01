@@ -15,11 +15,14 @@ void main(int argc, char *argv[])
 	curl_global_init(CURL_GLOBAL_ALL);
 	char *weibo= (char*)malloc((size_t)(WEIBO_POST_BUFFER_LENGTH*sizeof(char)));
 	memset(weibo, 0, WEIBO_POST_BUFFER_LENGTH*sizeof(char));
-	sprintf(weibo, "Picture upload interface Test");
+	sprintf(weibo, argv[1]);
 	AUTHCODE = get_auth_code("/home/pi/weicoPi/config/authorization_code");
-/*	post_new_weibo(AUTHCODE, weibo);*/
-	post_new_weibo_upload(AUTHCODE, "/home/pi/ocr_pi.png", weibo);
-	puts(AUTHCODE);
+	if(argc == 2) {
+		post_new_weibo(AUTHCODE, weibo);
+	}
+	else {
+		post_new_weibo_upload(AUTHCODE, argv[2], weibo);
+	}
 	free((char*)AUTHCODE); 
 	free((char*)weibo); 
 	curl_global_cleanup();

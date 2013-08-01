@@ -9,6 +9,7 @@
 #define INIT_AUTHORIZE_URL "https://api.weibo.com/oauth2/authorize"
 #define WEIBO_POST_URL "https://api.weibo.com/2/statuses/update.json"
 #define WEIBO_UPLOAD_URL "https://upload.api.weibo.com/2/statuses/upload.json"
+#define WEIBO_UPLOAD_URL1 "http://9.186.111.63/2/statuses/upload.json"
 #define WEIBO_REPOST_URL "https://api.weibo.com/2/statuses/repost.jason"
 #define WEIBO_DESTROY_URL "https://api.weibo.com/2/statuses/destroy.json"
 

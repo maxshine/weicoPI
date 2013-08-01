@@ -51,13 +51,16 @@ int post_new_weibo_upload(const char* access_token, const char* picture_file_nam
         curl_easy_setopt(curl, CURLOPT_URL, WEIBO_UPLOAD_URL);
         curl_easy_setopt(curl, CURLOPT_POST, 1L);
         curl_easy_setopt(curl, CURLOPT_HTTPPOST, post);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        curl_easy_setopt(curl, CURLOPT_HTTPPOST, post);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, tmp_body_file);
         curl_easy_setopt(curl, CURLOPT_WRITEHEADER, tmp_header_file);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
         ret = curl_easy_perform(curl);
 	curl_formfree(post);
         curl_easy_cleanup(curl);
-	
+
         fclose(tmp_body_file);
         fclose(tmp_header_file);
         return TRUE;
