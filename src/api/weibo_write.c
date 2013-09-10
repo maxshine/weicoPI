@@ -5,7 +5,7 @@
 #include "constants.h"
 #include "debug_util.h"
 
-int post_new_weibo(const char* access_token, char* buffer) 
+BOOL post_new_weibo(const char* access_token, char* buffer) 
 {
 	CURL *curl = NULL;
 	CURLcode ret;
@@ -26,6 +26,10 @@ int post_new_weibo(const char* access_token, char* buffer)
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
 	ret = curl_easy_perform(curl);
 	curl_easy_cleanup(curl);
+
+	debug_log(INFO, "post_new_weibo", "Weibo Posted");
+	debug_log_text_file(FINEST, "post_new_weibo", tmp_header_file);
+	debug_log_text_file(FINEST, "post_new_weibo", tmp_body_file);
 	
 	fclose(tmp_body_file);
 	fclose(tmp_header_file);
@@ -33,7 +37,7 @@ int post_new_weibo(const char* access_token, char* buffer)
 	return TRUE;
 }
 
-int post_new_weibo_upload(const char* access_token, const char* picture_file_name, char* buffer)
+BOOL post_new_weibo_upload(const char* access_token, const char* picture_file_name, char* buffer)
 {
         CURL *curl = NULL;
         CURLcode ret;

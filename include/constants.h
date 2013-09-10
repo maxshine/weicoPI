@@ -1,5 +1,7 @@
+#include <limits.h>
+
 #ifndef CONSTANTS_H
-#define CONSTANTS_H
+#define CONSTANTS_H 1
 
 #define APP_KEY "3773253995"
 #define APP_AUTH_REDIRECT_URL "http://"
@@ -14,8 +16,5 @@
 #define WEIBO_DESTROY_URL "https://api.weibo.com/2/statuses/destroy.json"
 
 #define WEIBO_POST_BUFFER_LENGTH 280
-
-#define TRUE 1
-#define FALSE 0
 
 #endif

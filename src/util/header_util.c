@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "debug_util.h"
 
 char* get_header_field_from_file(FILE* input_file, const char* prefix, char* buffer)
 {

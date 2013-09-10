@@ -2,7 +2,7 @@ MAINPATH := $(shell pwd)
 OUTPATH := $(MAINPATH)/build
 
 CFLAGS := -I $(MAINPATH)/include -c
-LDFLAGS=-lcurl
+LDFLAGS := -lcurl
 
 ifdef DEBUG
 CFLAGS += -g -O1
