@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <pwd.h>
+#include <dirent.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -66,6 +68,7 @@ void debug_log_text_file(LogLevel level, char* function_name, FILE* msg)
 	while (fgets(message, 100, msg)) {
 		do_debug_log(level, message);
 	}	
+	do_debug_log(level, "\n");
 	free(t);
 	free(message);
 	free(timestamp);
@@ -78,9 +81,27 @@ BOOL init_debug_log(const char* file_name, const LogLevel effective_level)
 	global_log_descriptor.log_file_handler = NULL;
 	struct passwd* passwd = getpwuid(getuid());
 	char* absolute_file_name = NULL;
+	DIR *dir_handler = NULL;
 	if (passwd != NULL) {
-		absolute_file_name = (char*)malloc((strlen(passwd->pw_dir)+strelen(file_name)+20)*sizeof(char));
+		if (passwd->pw_dir == NULL) {
+			puts("Please ensure the user has home directory configured\n");
+			return FALSE;
+		}
+		dir_handler = opendir(passwd->pw_dir);
+		if (errno == ENOENT || errno == ENOTDIR) {
+			perror("Please ensure the user home directory created");
+		}
+		closedir(dir_handler);
+		dir_handler = NULL;
+		absolute_file_name = (char*)malloc((strlen(passwd->pw_dir)+strlen(file_name)+20)*sizeof(char));
 		memset(absolute_file_name, 0, (strlen(passwd->pw_dir)+strlen(file_name)+20)*sizeof(char));
+		sprintf(absolute_file_name, "%s%s", passwd->pw_dir, "/.weicoPi");
+		dir_handler = opendir(absolute_file_name);
+		if (errno == ENOENT) {
+			mkdir(absolute_file_name, S_IRUSR | S_IWUSR | S_IXUSR);
+		}
+		closedir(dir_handler);
+		dir_handler = NULL;
 		sprintf(absolute_file_name, "%s%s%s", passwd->pw_dir, "/.weicoPi/", file_name);
 		global_log_descriptor.log_file_handler = fopen(absolute_file_name, "a+");
 		free(absolute_file_name);
