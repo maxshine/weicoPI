@@ -6,6 +6,7 @@
 #include <pwd.h>
 #include <dirent.h>
 #include <errno.h>
+#include <stdarg.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -24,7 +25,7 @@ void debug_show_file_content(FILE* file)
 	free(c);
 }
 
-void do_debug_log(LogLevel level, char* msg)
+void do_debug_log(LogLevel level, const char* msg)
 {
 	if (level >= global_log_descriptor.effective_level) {
 		fputs(msg, global_log_descriptor.log_file_handler);
@@ -32,7 +33,7 @@ void do_debug_log(LogLevel level, char* msg)
 	}	
 }
 
-void debug_log(LogLevel level, char* function_name, char* msg)
+void debug_log(LogLevel level, const char* function_name, const char* msg)
 {
 	pid_t pid = getpid();
 	pthread_t tid = pthread_self();
@@ -51,7 +52,7 @@ void debug_log(LogLevel level, char* function_name, char* msg)
 }
 
 
-void debug_log_text_file(LogLevel level, char* function_name, FILE* msg)
+void debug_log_text_file(LogLevel level, const char* function_name, FILE* msg)
 {
 	pid_t pid = getpid();
 	pthread_t tid = pthread_self();
@@ -118,4 +119,81 @@ BOOL deinit_debug_log(void)
 {
 	fflush(global_log_descriptor.log_file_handler);
 	fclose(global_log_descriptor.log_file_handler);
+}
+
+void debug_log_enter(LogLevel level, const char* function_name, const char* format, ...)
+{
+        pid_t pid = getpid();
+        pthread_t tid = pthread_self();
+        time_t* t = (time_t*)malloc(sizeof(time_t));
+        char* timestamp = (char*)malloc(30*sizeof(char));
+        char* message_prefix = (char*)malloc(100*sizeof(char));
+	char* message_1 = NULL;
+	char* message = NULL;
+	int format_length = strlen(format);
+	char c = '\0';
+	int i = 0;
+	va_list vg;
+	
+        memset(timestamp, 0, 30*sizeof(char));
+        memset(message_prefix, 0, 100*sizeof(char));
+        time(t);
+        strftime(timestamp, 30, "[%F %T Z%z]", localtime(t));
+        sprintf(message_prefix, "%s %#x %#x %s > %s ", timestamp, pid, tid, function_name, "ENTRY");
+	message_1 = message_prefix;
+	message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
+	memset(message, 0, (1000+strlen(message_1))*sizeof(char));
+
+	va_start(vg, format);
+	while(c=*(format+i)) {
+		switch(c){
+			case 'd':
+				sprintf(message, "%s : %d", message_1, va_arg(vg, int));
+				free(message_1);
+				message_1 = message;
+				message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
+				memset(message, 0, (1000+strlen(message_1))*sizeof(char));
+				i++;
+				break;
+			case 'f':
+                                sprintf(message, "%s : %lf", message_1, va_arg(vg, double));
+                                free(message_1);
+                                message_1 = message;
+                                message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
+                                memset(message, 0, (1000+strlen(message_1))*sizeof(char));
+                                i++;
+				break;
+			case 's':
+                                sprintf(message, "%s : %s", message_1, va_arg(vg, char*));
+                                free(message_1);
+                                message_1 = message;
+                                message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
+                                memset(message, 0, (1000+strlen(message_1))*sizeof(char));
+                                i++;
+				break;
+		}
+	}
+	va_end(vg);
+	message = message_1;
+        do_debug_log(level, message);
+        do_debug_log(level, "\n");	
+	free(message);
+}
+
+void debug_log_exit(LogLevel level, const char* function_name)
+{
+        pid_t pid = getpid();
+        pthread_t tid = pthread_self();
+        time_t* t = (time_t*)malloc(sizeof(time_t));
+        char* timestamp = (char*)malloc(30*sizeof(char));
+        char* message = (char*)malloc(100*sizeof(char));
+
+        memset(timestamp, 0, 30*sizeof(char));
+        memset(message, 0, 100*sizeof(char));
+        time(t);
+        strftime(timestamp, 30, "[%F %T Z%z]", localtime(t));
+        sprintf(message, "%s %#x %#x %s < %s ", timestamp, pid, tid, function_name, "EXIT");
+        do_debug_log(level, message);
+        do_debug_log(level, "\n");
+	free(message);
 }

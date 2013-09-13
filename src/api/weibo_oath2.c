@@ -15,7 +15,7 @@ char* get_authorize_code(char* buffer)
 	char *post_data=NULL;
 
 	memset(data, '\0', 100*sizeof(char));
-	sprintf(data, "client_id=%s&redirect_uri=%s&display=client&response_type=code&display=client", APP_KEY, APP_AUTH_REDIRECT_URL);
+	sprintf(data, "client_id=%s&redirect_uri=%s&response_type=code&display=client", APP_KEY, APP_AUTH_REDIRECT_URL);
 	FILE* tmp_body_file = tmpfile();
 	FILE* tmp_header_file = tmpfile();
 
@@ -30,6 +30,8 @@ char* get_authorize_code(char* buffer)
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
 	ret = curl_easy_perform(curl);
 	curl_easy_cleanup(curl);
+	debug_log_text_file(INFO, "get_authorize_code", tmp_header_file);
+	debug_log_text_file(INFO, "get_authorize_code", tmp_body_file);
 
 	get_header_field_from_file(tmp_header_file, "Location: ", buffer);
 	fclose(tmp_body_file);

@@ -17,8 +17,8 @@ void main(int argc, char *argv[])
 	char *weibo= (char*)malloc((size_t)(WEIBO_POST_BUFFER_LENGTH*sizeof(char)));
 	memset(weibo, 0, WEIBO_POST_BUFFER_LENGTH*sizeof(char));
 	sprintf(weibo, "%s", argv[1]);
-	AUTHCODE = get_auth_code("/home/pi/weicoPi/config/authorization_code");
 	init_debug_log("weicoPi.log", FINEST);
+	AUTHCODE = get_auth_code("/home/pi/weicoPi/config/authorization_code");
 	if(argc == 2) {
 		post_new_weibo(AUTHCODE, weibo);
 	}

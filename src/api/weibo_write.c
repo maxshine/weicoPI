@@ -5,8 +5,10 @@
 #include "constants.h"
 #include "debug_util.h"
 
-BOOL post_new_weibo(const char* access_token, char* buffer) 
+BOOL post_new_weibo(const char* access_token, const char* buffer) 
 {
+	debug_log_enter(FINE, "post_new_weibo", "ss", access_token, buffer);
+
 	CURL *curl = NULL;
 	CURLcode ret;
 	char *data = (char*) malloc((50+WEIBO_POST_BUFFER_LENGTH)*sizeof(char));
@@ -34,11 +36,14 @@ BOOL post_new_weibo(const char* access_token, char* buffer)
 	fclose(tmp_body_file);
 	fclose(tmp_header_file);
 	free(data);
+	debug_log_exit(FINE, "post_new_weibo");
 	return TRUE;
 }
 
-BOOL post_new_weibo_upload(const char* access_token, const char* picture_file_name, char* buffer)
+BOOL post_new_weibo_upload(const char* access_token, const char* picture_file_name, const char* buffer)
 {
+	debug_log_enter(FINE, "post_new_weibo_upload", "sss", access_token, picture_file_name, buffer);
+
         CURL *curl = NULL;
         CURLcode ret;
 	struct curl_httppost *post = NULL;
@@ -67,11 +72,13 @@ BOOL post_new_weibo_upload(const char* access_token, const char* picture_file_na
 
         fclose(tmp_body_file);
         fclose(tmp_header_file);
+	debug_log_exit(FINE, "post_new_weibo_upload"); 
         return TRUE;
 }
 
-int repost_weibo(const char* access_token, const char* id, char* buffer, int isComment)
+int repost_weibo(const char* access_token, const char* id, const char* buffer, const int isComment)
 {
+	debug_log_enter(FINE, "repost_weibo", "sssd", access_token, id, buffer, isComment);
         CURL *curl = NULL;
         CURLcode ret;
         char *data = (char*) malloc((50+WEIBO_POST_BUFFER_LENGTH)*sizeof(char));
@@ -101,11 +108,13 @@ int repost_weibo(const char* access_token, const char* id, char* buffer, int isC
         fclose(tmp_body_file);
         fclose(tmp_header_file);
         free(data);
+	debug_log_exit(FINE, "repost_weibo");
         return TRUE;
 }
 
-int destroy_weibo(const char* access_token, char* id)
+int destroy_weibo(const char* access_token, const char* id)
 {
+	debug_log_enter(FINE, "destroy_weibo", "ss", access_token, id);
         CURL *curl = NULL;
         CURLcode ret;
         char *data = (char*) malloc((50+WEIBO_POST_BUFFER_LENGTH)*sizeof(char));
@@ -129,5 +138,6 @@ int destroy_weibo(const char* access_token, char* id)
         fclose(tmp_body_file);
         fclose(tmp_header_file);
         free(data);
+	debug_log_exit(FINE, "destroy_weibo");
         return TRUE;
 }

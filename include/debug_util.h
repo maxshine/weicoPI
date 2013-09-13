@@ -26,10 +26,12 @@ typedef struct log_descriptor {
 } LogDescriptor;
 
 void debug_show_file_content(FILE* file);
-void debug_log_text_file(LogLevel level, char* function_name, FILE* msg);
-void debug_log(LogLevel level, char* function_name, char* msg);
-void do_debug_log(LogLevel level, char* msg);
+void debug_log_text_file(LogLevel level, const char* function_name, FILE* msg);
+void debug_log(LogLevel level, const char* function_name, const char* msg);
+void do_debug_log(LogLevel level, const char* msg);
 BOOL init_debug_log(const char* file_name, const LogLevel effective_level);
 BOOL deinit_debug_log(void);
+void debug_log_enter(LogLevel level, const char* function_name, const char* format, ...);
+void debug_log_exit(LogLevel level, const char* function_name);
 
 #endif
