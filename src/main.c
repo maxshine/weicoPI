@@ -5,11 +5,13 @@
 #include <curl/curl.h>
 #include "weibo_oath2.h"
 #include "weibo_write.h"
+#include "user_read.h"
 #include "init.h"
 #include "constants.h"
 #include "debug_util.h"
 
 const char* AUTHCODE = NULL;
+char* USERID = NULL;
 
 void main(int argc, char *argv[])
 {
@@ -19,14 +21,21 @@ void main(int argc, char *argv[])
 	sprintf(weibo, "%s", argv[1]);
 	init_debug_log("weicoPi.log", FINEST);
 	AUTHCODE = get_auth_code("/home/pi/weicoPi/config/authorization_code");
-	if(argc == 2) {
+	USERID = (char*)malloc(20*sizeof(char));
+	memset(USERID, 0, 20*sizeof(char));
+
+/*	if(argc == 2) {
 		post_new_weibo(AUTHCODE, weibo);
 	}
 	else {
 		post_new_weibo_upload(AUTHCODE, argv[2], weibo);
 	}
+*/
+	sprintf(USERID, "%d", get_userid(AUTHCODE));
+	get_user_timeline(AUTHCODE, USERID, "0", "20");
 	deinit_debug_log();
 	free((char*)AUTHCODE); 
+	free((char*)USERID); 
 	free((char*)weibo); 
 	curl_global_cleanup();
 }

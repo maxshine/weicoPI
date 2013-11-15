@@ -19,6 +19,10 @@
 #define WEIBO_REPOST_URL "https://api.weibo.com/2/statuses/repost.jason"
 #define WEIBO_DESTROY_URL "https://api.weibo.com/2/statuses/destroy.json"
 
+#define WEIBO_GET_USER_TIMELINE_URL "https://api.weibo.com/2/statuses/user_timeline.json"
+
+#define WEIBO_GET_USERID_URL "https://api.weibo.com/2/account/get_uid.json"
+
 #define WEIBO_POST_BUFFER_LENGTH 280
 
 #endif
