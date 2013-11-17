@@ -39,10 +39,10 @@ weibo_oath2.o : weibo_oath2.c weibo_oath2.h $(common) $(http)
 weibo_write.o : weibo_write.c weibo_write.h $(common) $(http)
 	gcc $(CFLAGS) $(MAINPATH)/src/api/weibo_write.c -o $(OUTPATH)/weibo_write.o 
 
-weibo_read.o : weibo_read.c weibo_write.h $(common) $(json) $(http)
+weibo_read.o : weibo_read.c weibo_write.h $(common) $(json) $(http) $(util)
 	gcc $(CFLAGS) $(MAINPATH)/src/api/weibo_read.c -o $(OUTPATH)/weibo_read.o 
 
-user_read.o : user_read.c user_read.h $(common) $(json) $(http)
+user_read.o : user_read.c user_read.h $(common) $(json) $(http) $(util)
 	gcc $(CFLAGS) $(MAINPATH)/src/api/user_read.c -o $(OUTPATH)/user_read.o 
 
 debug_util.o : debug_util.h debug_util.c constants.h
