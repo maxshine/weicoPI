@@ -7,12 +7,12 @@
 #include "constants.h"
 #include "debug_util.h"
 
-int get_userid(const char* access_token)
+long get_userid(const char* access_token)
 {
         debug_log_enter(FINE, "get_userid", "s", access_token);
 
 	cJSON* root = NULL;
-	int uid = 0;
+	long uid = 0L;
 
         CURL *curl = NULL;
         CURLcode ret;
@@ -31,7 +31,7 @@ int get_userid(const char* access_token)
         curl_easy_cleanup(curl);
 
 	root = cJSON_Parse(*(userdata));
-	uid = cJSON_GetObjectItem(root, "uid")->valueint;
+	uid = (long) cJSON_GetObjectItem(root, "uid")->valuedouble;
 
         debug_log(INFO, "get_userid", *userdata);
 

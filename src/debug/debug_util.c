@@ -64,7 +64,7 @@ void debug_log_text_file(LogLevel level, const char* function_name, FILE* msg)
 	memset(message, 0, 100*sizeof(char));
 	time(t);
 	strftime(timestamp, 30, "[%F %T Z%z]", localtime(t));
-	sprintf(message, "%s %#x %#x %s \n", timestamp, pid, tid, function_name);
+	sprintf(message, "%s %#x %#x %s\n", timestamp, pid, tid, function_name);
 	do_debug_log(level, message);
 	while (fgets(message, 100, msg)) {
 		do_debug_log(level, message);
@@ -130,7 +130,7 @@ void debug_log_enter(LogLevel level, const char* function_name, const char* form
         char* message_prefix = (char*)malloc(100*sizeof(char));
 	char* message_1 = NULL;
 	char* message = NULL;
-	int format_length = strlen(format);
+	int format_length = 0;
 	char c = '\0';
 	int i = 0;
 	va_list vg;
@@ -144,40 +144,53 @@ void debug_log_enter(LogLevel level, const char* function_name, const char* form
 	message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
 	memset(message, 0, (1000+strlen(message_1))*sizeof(char));
 
-	va_start(vg, format);
-	while(c=*(format+i)) {
-		switch(c){
-			case 'd':
-				sprintf(message, "%s : %d", message_1, va_arg(vg, int));
-				free(message_1);
-				message_1 = message;
-				message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
-				memset(message, 0, (1000+strlen(message_1))*sizeof(char));
-				i++;
-				break;
-			case 'f':
-                                sprintf(message, "%s : %lf", message_1, va_arg(vg, double));
-                                free(message_1);
-                                message_1 = message;
-                                message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
-                                memset(message, 0, (1000+strlen(message_1))*sizeof(char));
-                                i++;
-				break;
-			case 's':
-                                sprintf(message, "%s : %s", message_1, va_arg(vg, char*));
-                                free(message_1);
-                                message_1 = message;
-                                message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
-                                memset(message, 0, (1000+strlen(message_1))*sizeof(char));
-                                i++;
-				break;
+	if(format != NULL)
+	{
+		format_length = strlen(format);
+		va_start(vg, format);
+		while(c=*(format+i)) {
+			switch(c){
+				case 'd':
+					sprintf(message, "%s : %d", message_1, va_arg(vg, int));
+					free(message_1);
+					message_1 = message;
+					message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
+					memset(message, 0, (1000+strlen(message_1))*sizeof(char));
+					i++;
+					break;
+				case 'f':
+					sprintf(message, "%s : %lf", message_1, va_arg(vg, double));
+					free(message_1);
+	                                message_1 = message;
+					message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
+					memset(message, 0, (1000+strlen(message_1))*sizeof(char));
+					i++;
+					break;
+				case 's':
+					sprintf(message, "%s : %s", message_1, va_arg(vg, char*));
+					free(message_1);
+	                                message_1 = message;
+					message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
+					memset(message, 0, (1000+strlen(message_1))*sizeof(char));
+					i++;
+					break;
+				case 'p':
+					sprintf(message, "%s : %p", message_1, va_arg(vg, void*));
+					free(message_1);
+	                                message_1 = message;
+					message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
+					memset(message, 0, (1000+strlen(message_1))*sizeof(char));
+					i++;
+					break;
+			}
 		}
+		va_end(vg);
 	}
-	va_end(vg);
 	message = message_1;
+	sprintf(message, "%s\n", message_1);
         do_debug_log(level, message);
-        do_debug_log(level, "\n");	
 	free(message);
+	free(message_1);
 }
 
 void debug_log_exit(LogLevel level, const char* function_name)
@@ -192,8 +205,7 @@ void debug_log_exit(LogLevel level, const char* function_name)
         memset(message, 0, 100*sizeof(char));
         time(t);
         strftime(timestamp, 30, "[%F %T Z%z]", localtime(t));
-        sprintf(message, "%s %#x %#x %s < %s ", timestamp, pid, tid, function_name, "EXIT");
+        sprintf(message, "%s %#x %#x %s < %s\n", timestamp, pid, tid, function_name, "EXIT");
         do_debug_log(level, message);
-        do_debug_log(level, "\n");
 	free(message);
 }

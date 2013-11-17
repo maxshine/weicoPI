@@ -13,7 +13,7 @@ vpath %.c $(MAINPATH)/src/api/:$(MAINPATH)/src/debug/:$(MAINPATH)/src/util/:$(MA
 vpath %.h $(MAINPATH)/include/
 vpath %.o $(MAINPATH)/build/
 
-objects := main.o weibo_oath2.o debug_util.o header_util.o http_util.o init.o weibo_write.o weibo_read.o user_read.o cJSON.o
+objects := main.o weibo_oath2.o debug_util.o header_util.o http_util.o init.o weibo_write.o weibo_read.o user_read.o cJSON.o weibo_util.o
 
 jsons := cJSON.h cJSON.c
 
@@ -21,9 +21,11 @@ debug := debug_util.h debug_util.c
 
 http := header_util.h header_util.c http_util.h http_util.c
 
-common := constants.h $(debug)
+common := constants.h $(debug) datatype.h
 
 api := weibo_oath2.c weibo_oath2.h weibo_write.h weibo_write.c weibo_read.h weibo_read.c user_read.h user_read.c
+
+util := weibo_util.h weibo_util.c
 
 weicoPi : $(objects)
 	cd $(OUTPATH);gcc $(LDFLAGS) $^ -o $(MAINPATH)/$@
@@ -57,6 +59,9 @@ cJSON.o : cJSON.h cJSON.c
 
 init.o : init.c init.h constants.h
 	gcc $(CFLAGS) $(MAINPATH)/src/util/init.c -o $(OUTPATH)/init.o
+
+weibo_util.o : weibo_util.h weibo_util.c $(cJSON) $(common)
+	gcc $(CFLAGS) $(MAINPATH)/src/util/weibo_util.c -o $(OUTPATH)/weibo_util.o
 
 .PHONY : all
 
