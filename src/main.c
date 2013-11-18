@@ -32,7 +32,10 @@ void main(int argc, char *argv[])
 	}
 */
 	sprintf(USERID, "%d", get_userid(AUTHCODE));
-	get_user_timeline(AUTHCODE, USERID, "0", "20");
+	get_user_timeline(AUTHCODE, USERID, "1", "0", "1");
+	get_friends_timeline(AUTHCODE, "1", "0", "1");
+	get_public_timeline(AUTHCODE, "1", "0", "1");
+	get_home_timeline(AUTHCODE, "1", "0", "1");
 	deinit_debug_log();
 	free((char*)AUTHCODE); 
 	free((char*)USERID); 

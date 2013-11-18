@@ -24,13 +24,14 @@ PTR_WEIBO_ENTITY init_weibo_entity()
 		ptr_weibo_entity->attitudes_count = 0;
 		ptr_weibo_entity->geo = NULL;
 		ptr_weibo_entity->user = NULL;	
+		ptr_weibo_entity->retweeted_status = NULL;
 		ptr_weibo_entity->prev = NULL;
 		ptr_weibo_entity->next = NULL;
 		ptr_weibo_entity->pic_urls_qty = 0;
 		i = 0;
 		while(i++ < MAX_PIC_URL_QTY)
 		{
-			(ptr_weibo_entity->pic_urls)[i] = NULL;
+			(ptr_weibo_entity->pic_urls)[i-1] = NULL;
 		}
 	}
 	debug_log_exit(FINE, "init_weibo_entity");
@@ -224,9 +225,14 @@ void destroy_weibo_entity(PTR_WEIBO_ENTITY ptr_weibo_entity)
 		i = 0;
 		while(i++ < ptr_weibo_entity->pic_urls_qty)
 		{
-			free((ptr_weibo_entity->pic_urls)[i]);
-			(ptr_weibo_entity->pic_urls)[i] = NULL;
+			free((ptr_weibo_entity->pic_urls)[i-1]);
+			(ptr_weibo_entity->pic_urls)[i-1] = NULL;
 		}
+	}
+	if(ptr_weibo_entity->retweeted_status != NULL)
+	{
+		destroy_weibo_entity(ptr_weibo_entity->retweeted_status);
+		ptr_weibo_entity->retweeted_status = NULL;
 	}
 	free(ptr_weibo_entity);	
 	debug_log_exit(FINE, "destroy_weibo_entity");
@@ -473,30 +479,36 @@ PTR_WEIBO_ENTITY create_weibo_from_json(cJSON* json_object)
 		ptr_weibo_entity->created_at = (char*) malloc((1+json_length)*sizeof(char));
 		strcpy(ptr_weibo_entity->created_at, ptr_json->valuestring);
 	}
-	if(cJSON_GetObjectItem(json_object, "pic_urls") != NULL)		
+	if(cJSON_GetObjectItem(json_object, "retweeted_status") != NULL)		
+	{
+		ptr_json = cJSON_GetObjectItem(json_object, "retweeted_status");
+		ptr_weibo_entity->retweeted_status = create_weibo_from_json(ptr_json);
+	}
+	if(cJSON_GetObjectItem(json_object, "pic_urls") != NULL)
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "pic_urls");
 		json_length = cJSON_GetArraySize(ptr_json);
 		ptr_weibo_entity->pic_urls_qty = json_length;
+		i = 0;
 		while(i++ < ptr_weibo_entity->pic_urls_qty)
 		{
-			json_length = strlen(cJSON_GetArrayItem(ptr_json, i)->valuestring);
-			(ptr_weibo_entity->pic_urls)[i] = (char*) malloc((1+json_length)*sizeof(char));
-			strcpy((ptr_weibo_entity->pic_urls)[i], cJSON_GetArrayItem(ptr_json, i)->valuestring);
+			json_length = strlen(cJSON_GetObjectItem(cJSON_GetArrayItem(ptr_json, i-1), "thumbnail_pic")->valuestring);
+			(ptr_weibo_entity->pic_urls)[i-1] = (char*) malloc((1+json_length)*sizeof(char));
+			strcpy((ptr_weibo_entity->pic_urls)[i-1], cJSON_GetObjectItem(cJSON_GetArrayItem(ptr_json, i-1), "thumbnail_pic")->valuestring);
 		}
 	
 	}
-	if(cJSON_GetObjectItem(json_object, "id") != NULL)		
+	if(cJSON_GetObjectItem(json_object, "id") != NULL)
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "id");
 		ptr_weibo_entity->id = (long)ptr_json->valuedouble;
 	}
-	if(cJSON_GetObjectItem(json_object, "user") != NULL)		
+	if(cJSON_GetObjectItem(json_object, "user") != NULL && cJSON_GetObjectItem(json_object, "user")->type != cJSON_NULL)
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "user");
 		ptr_weibo_entity->user = create_user_from_json(ptr_json);
 	}
-	if(cJSON_GetObjectItem(json_object, "geo") != NULL)		
+	if(cJSON_GetObjectItem(json_object, "geo") != NULL && cJSON_GetObjectItem(json_object, "geo")->type != cJSON_NULL)
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "geo");
 		ptr_weibo_entity->geo = create_geo_from_json(ptr_json);

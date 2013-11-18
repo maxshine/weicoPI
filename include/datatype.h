@@ -20,6 +20,7 @@ typedef struct weibo_entity {
 	int attitudes_count;
 	struct geo_entity *geo;
 	struct user_entity *user;	
+	struct weibo_entity *retweeted_status;
 	struct weibo_entity *prev;
 	struct weibo_entity *next;
 

@@ -186,11 +186,10 @@ void debug_log_enter(LogLevel level, const char* function_name, const char* form
 		}
 		va_end(vg);
 	}
-	message = message_1;
 	sprintf(message, "%s\n", message_1);
         do_debug_log(level, message);
-	free(message);
 	free(message_1);
+	free(message);
 }
 
 void debug_log_exit(LogLevel level, const char* function_name)
