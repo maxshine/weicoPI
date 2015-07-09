@@ -3,7 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "cJSON.h"
-#include "http_util.h"
+#include "datatype.h"
+#include "http_action.h"
 #include "constants.h"
 #include "debug_util.h"
 
@@ -14,30 +15,15 @@ long get_userid(const char* access_token)
 	cJSON* root = NULL;
 	long uid = 0L;
 
-        CURL *curl = NULL;
-        CURLcode ret;
-        char *url = (char*) malloc((20+sizeof(WEIBO_GET_USERID_URL)+strlen(access_token))*sizeof(char));
-        char **userdata = (char**) malloc(1*sizeof(char*)); 
-        *userdata = (char*) malloc(1*sizeof(char*)); 
-        memset(url, '\0', (20+sizeof(WEIBO_GET_USERID_URL)+strlen(access_token))*sizeof(char));
-        sprintf(url, "%s?access_token=%s", WEIBO_GET_USERID_URL, access_token);
+	PTR_HTTP_REQUEST request = alloc_http_request(0, 1, 0);
+	PTR_HTTP_RESPONSE response = NULL;
+	request->form[0].name = "access_token";
+	request->form[0].value = access_token;
+	response = https_get(WEIBO_GET_USERID_URL, request);
 
-        curl = curl_easy_init();
-        curl_easy_setopt(curl, CURLOPT_URL, url);
-        curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, userdata);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_body);
-        ret = curl_easy_perform(curl);
-        curl_easy_cleanup(curl);
-
-	root = cJSON_Parse(*(userdata));
+	root = cJSON_Parse((char*)(response->body));
 	uid = (long) cJSON_GetObjectItem(root, "uid")->valuedouble;
 
-        debug_log(INFO, "get_userid", *userdata);
-
-        free(url);
-	free(*userdata);
-	free(userdata);
 	cJSON_Delete(root);
         debug_log_exit(FINE, "get_userid");
         return uid;

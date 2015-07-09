@@ -1,5 +1,7 @@
+#include <stdint.h>
+
 #ifndef DATATYPE_H
-#define DATATYPE_H 1
+#define DATATYPE_H
 #define MAX_PIC_URL_QTY 9
 struct weibo_entity;
 struct geo_entity;
@@ -59,5 +61,35 @@ typedef struct user_entity {
 	struct user_entity *next;
 
 } USER_ENTITY, *PTR_USER_ENTITY;
+
+typedef struct http_header {
+  char *name;
+  char *value;
+  struct http_header* next;
+} HTTP_HEADER, *PTR_HTTP_HEADER;
+
+typedef struct http_form {
+  char *name;
+  char *value;
+  struct http_form* next;
+} HTTP_FORM, *PTR_HTTP_FORM;
+
+typedef struct http_request {
+  PTR_HTTP_HEADER headers;
+  uint32_t headers_qty;
+  PTR_HTTP_FORM form;
+  uint32_t form_length;
+  void* body;
+  uint32_t body_length;
+} HTTP_REQUEST, *PTR_HTTP_REQUEST;
+
+typedef struct http_response {
+  long status_code;
+  PTR_HTTP_HEADER headers;
+  uint32_t headers_qty;
+  void* body;
+  uint32_t body_length;
+  char* error;
+} HTTP_RESPONSE, *PTR_HTTP_RESPONSE;
 
 #endif

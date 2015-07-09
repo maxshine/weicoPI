@@ -1,5 +1,5 @@
 #ifndef INIT_H
-#define INIT_H 1
+#define INIT_H
 
 const char* get_auth_code(const char* config_filename);
 

@@ -1,10 +1,10 @@
 #include <limits.h>
 
 #ifndef DEBUG_UTIL_H
-#define DEBUG_UTIL_H 1
+#define DEBUG_UTIL_H
 
 
-#define OFF UNIT_MAX
+#define OFF UINT_MAX
 #define FATAL 10000
 #define SEVERE 1000
 #define WARNING 100

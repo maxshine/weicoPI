@@ -1,7 +1,7 @@
 #include <limits.h>
 
 #ifndef CONSTANTS_H
-#define CONSTANTS_H 1
+#define CONSTANTS_H
 
 /*#define APP_KEY "3773253995"
 #define APP_AUTH_REDIRECT_URL "http://"

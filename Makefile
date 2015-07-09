@@ -13,13 +13,13 @@ vpath %.c $(MAINPATH)/src/api/:$(MAINPATH)/src/debug/:$(MAINPATH)/src/util/:$(MA
 vpath %.h $(MAINPATH)/include/
 vpath %.o $(MAINPATH)/build/
 
-objects := main.o weibo_oath2.o debug_util.o header_util.o http_util.o init.o weibo_write.o weibo_read.o user_read.o cJSON.o weibo_util.o
+objects := main.o weibo_oath2.o debug_util.o http_util.o http_action.o init.o weibo_write.o weibo_read.o user_read.o cJSON.o weibo_util.o
 
 jsons := cJSON.h cJSON.c
 
 debug := debug_util.h debug_util.c
 
-http := header_util.h header_util.c http_util.h http_util.c
+http := http_action.h http_action.c http_util.h http_util.c
 
 common := constants.h $(debug) datatype.h
 
@@ -48,8 +48,8 @@ user_read.o : user_read.c user_read.h $(common) $(json) $(http) $(util)
 debug_util.o : debug_util.h debug_util.c constants.h
 	gcc $(CFLAGS) $(MAINPATH)/src/debug/debug_util.c -o $(OUTPATH)/debug_util.o
 
-header_util.o : header_util.c header_util.h constants.h
-	gcc $(CFLAGS) $(MAINPATH)/src/util/header_util.c -o $(OUTPATH)/header_util.o
+http_action.o : http_action.c http_action.h constants.h
+	gcc $(CFLAGS) $(MAINPATH)/src/util/http_action.c -o $(OUTPATH)/http_action.o
 
 http_util.o : http_util.c http_util.h constants.h
 	gcc $(CFLAGS) $(MAINPATH)/src/util/http_util.c -o $(OUTPATH)/http_util.o

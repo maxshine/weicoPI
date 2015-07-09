@@ -1,5 +1,7 @@
+#include "cJSON.h"
+
 #ifndef WEIBO_UTIL_H
-#define WEIBO_UTIL_H 1
+#define WEIBO_UTIL_H
 
 PTR_WEIBO_ENTITY init_weibo_entity();
 PTR_USER_ENTITY init_user_entity();
