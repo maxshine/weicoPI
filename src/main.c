@@ -23,7 +23,7 @@ void main(int argc, char *argv[])
 	AUTHCODE = get_auth_code("/home/pi/weicoPi/config/authorization_code");
 	USERID = (char*)malloc(20*sizeof(char));
 	memset(USERID, 0, 20*sizeof(char));
-
+ 
 /*	if(argc == 2) {
 		post_new_weibo(AUTHCODE, weibo);
 	}
@@ -36,6 +36,7 @@ void main(int argc, char *argv[])
 	get_friends_timeline(AUTHCODE, "1", "0", "1");
 	get_public_timeline(AUTHCODE, "1", "0", "1");
 	get_home_timeline(AUTHCODE, "1", "0", "1");*/
+	get_userid(AUTHCODE);
 	deinit_debug_log();
 	free((char*)AUTHCODE); 
 	free((char*)USERID); 

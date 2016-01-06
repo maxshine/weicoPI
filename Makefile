@@ -69,3 +69,4 @@ all : weicoPi
 
 clean :
 	rm -f $(OUTPATH)/*.o
+	rm -f $(MAINPATH)/weicoPi

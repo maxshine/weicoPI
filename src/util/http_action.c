@@ -10,6 +10,7 @@
 
 void free_http_request(PTR_HTTP_REQUEST request)
 {
+  debug_log_enter(FINE, __func__, NULL);
   if (request != NULL) {
     if (request->headers != NULL) {
       free(request->headers);
@@ -25,10 +26,12 @@ void free_http_request(PTR_HTTP_REQUEST request)
     }
     free(request);
   }
+  debug_log_exit(FINE, __func__);
 }
 
 void free_http_response(PTR_HTTP_RESPONSE response)
 {
+  debug_log_enter(FINE,__func__, NULL);
   if (response != NULL) {
     if (response->headers != NULL) {
       free(response->headers);
@@ -44,15 +47,17 @@ void free_http_response(PTR_HTTP_RESPONSE response)
     }
     free(response);
   }
+  debug_log_exit(FINE, __func__);
 }
 
 PTR_HTTP_REQUEST alloc_http_request(uint32_t headers_qty, uint32_t form_length, uint32_t body_length)
 {
+  debug_log_enter(FINE,__func__, NULL);
   uint32_t i = 0;
   PTR_HTTP_REQUEST request = (PTR_HTTP_REQUEST) malloc(sizeof(HTTP_REQUEST));
 
   if (request != NULL) {
-    if (request->headers_qty > 0) {
+    if (headers_qty > 0) {
       request->headers = (PTR_HTTP_HEADER) malloc(sizeof(HTTP_HEADER)*headers_qty);
     } else {
       request->headers = NULL;
@@ -64,8 +69,8 @@ PTR_HTTP_REQUEST alloc_http_request(uint32_t headers_qty, uint32_t form_length, 
 	request->headers[i].value = NULL;
       }
       request->headers_qty = headers_qty;
-    } else {
-      free(request);
+    } else if (headers_qty > 0){
+      free_http_request(request);
       return NULL;
     }
     if (form_length > 0) {
@@ -80,9 +85,8 @@ PTR_HTTP_REQUEST alloc_http_request(uint32_t headers_qty, uint32_t form_length, 
         request->form[i].value = NULL;
       }
       request->form_length = form_length;
-    } else {
-      free(request->headers);
-      free(request);
+    } else if (form_length > 0){
+      free_http_request(request);
       return NULL;
     }
     if (body_length > 0) {
@@ -94,18 +98,18 @@ PTR_HTTP_REQUEST alloc_http_request(uint32_t headers_qty, uint32_t form_length, 
     if (request->body != NULL) {
       request->body_length = body_length;
       memset(request->body, '\0', body_length);
-    } else {
-      free(request->form);
-      free(request->headers);
-      free(request);
+    } else if (body_length > 0){
+      free_http_request(request);
       return NULL;
     }
   }
+  debug_log_exit(FINE, __func__);
   return request;
 }
 
 PTR_HTTP_RESPONSE alloc_http_response(uint32_t headers_qty, uint32_t body_length)
 {
+  debug_log_enter(FINE,__func__, NULL);
   uint32_t i = 0;
   PTR_HTTP_RESPONSE response = (PTR_HTTP_RESPONSE) malloc(sizeof(HTTP_RESPONSE));
 
@@ -122,8 +126,8 @@ PTR_HTTP_RESPONSE alloc_http_response(uint32_t headers_qty, uint32_t body_length
 	response->headers[i].value = NULL;
       }
       response->headers_qty = headers_qty;
-    } else {
-      free(response);
+    } else if (headers_qty > 0){
+      free_http_response(response);
       return NULL;
     }
     if (body_length > 0) {
@@ -135,26 +139,25 @@ PTR_HTTP_RESPONSE alloc_http_response(uint32_t headers_qty, uint32_t body_length
     if (response->body != NULL) {
       response->body_length = body_length;
       memset(response->body, '\0', body_length);
-    } else {
-      free(response->headers);
-      free(response);
+    } else if (body_length > 0){
+      free_http_response(response);
       return NULL;
     }
     response->error = (char*) malloc(sizeof(char)*CURL_ERROR_SIZE);
     if (response->error != NULL) {
       memset(response->error, '\0', CURL_ERROR_SIZE*sizeof(char));
     } else {
-      free(response->body);
-      free(response->headers);
-      free(response);
+      free_http_response(response);
       return NULL;
     }
   }
+  debug_log_exit(FINE, __func__);
   return response;
 }
 
 PTR_HTTP_RESPONSE http_get(char* url, PTR_HTTP_REQUEST request)
 {
+  debug_log_enter(FINE,__func__, NULL);
   int i = 0;
   char* sp = (char*) malloc(1024*sizeof(char));
   memset(sp, '\0', 1024*sizeof(char));
@@ -199,11 +202,13 @@ PTR_HTTP_RESPONSE http_get(char* url, PTR_HTTP_REQUEST request)
   curl_easy_cleanup(curl_handler);
   curl_slist_free_all(slist);
   free(sp);
+  debug_log_exit(FINE, __func__);
   return response;
 }
 
 PTR_HTTP_RESPONSE http_post(char* url, PTR_HTTP_REQUEST request)
 {
+  debug_log_enter(FINE,__func__, NULL);
   int i = 0;
   char* sp = (char*) malloc(1024*sizeof(char));
   memset(sp, '\0', 1024*sizeof(char));
@@ -243,11 +248,13 @@ PTR_HTTP_RESPONSE http_post(char* url, PTR_HTTP_REQUEST request)
   curl_easy_cleanup(curl_handler);
   curl_slist_free_all(slist);
   free(sp);
+  debug_log_exit(FINE, __func__);
   return response;
 }
 
 PTR_HTTP_RESPONSE https_get(char* url, PTR_HTTP_REQUEST request)
 {
+  debug_log_enter(FINE,__func__, NULL);
   int i = 0;
   char* sp = (char*) malloc(1024*sizeof(char));
   memset(sp, '\0', 1024*sizeof(char));
@@ -294,11 +301,13 @@ PTR_HTTP_RESPONSE https_get(char* url, PTR_HTTP_REQUEST request)
   curl_easy_cleanup(curl_handler);
   curl_slist_free_all(slist);
   free(sp);
+  debug_log_exit(FINE, __func__);
   return response;
 }
 
 PTR_HTTP_RESPONSE https_post(char* url, PTR_HTTP_REQUEST request)
 {
+  debug_log_enter(FINE,__func__, NULL);
   int i = 0;
   char* sp = (char*) malloc(1024*sizeof(char));
   memset(sp, '\0', 1024*sizeof(char));
@@ -342,5 +351,6 @@ PTR_HTTP_RESPONSE https_post(char* url, PTR_HTTP_REQUEST request)
   curl_easy_cleanup(curl_handler);
   curl_slist_free_all(slist);
   free(sp);
+  debug_log_exit(FINE, __func__);
   return response;
 }
