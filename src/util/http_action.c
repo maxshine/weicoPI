@@ -50,7 +50,7 @@ void free_http_response(PTR_HTTP_RESPONSE response)
   debug_log_exit(FINE, __func__);
 }
 
-PTR_HTTP_REQUEST alloc_http_request(uint32_t headers_qty, uint32_t form_length, uint32_t body_length)
+PTR_HTTP_REQUEST alloc_http_request(uint32_t params_qty, uint32_t headers_qty, uint32_t form_length, uint32_t body_length)
 {
   debug_log_enter(FINE,__func__, NULL);
   uint32_t i = 0;
@@ -73,6 +73,22 @@ PTR_HTTP_REQUEST alloc_http_request(uint32_t headers_qty, uint32_t form_length, 
       free_http_request(request);
       return NULL;
     }
+    if (params_qty > 0) {
+      request->params = (PTR_HTTP_PARAM) malloc(sizeof(HTTP_PARAM)*params_qty);
+    } else {
+      request->params = NULL;
+      request->params_qty = 0;
+    }
+    if (request->params != NULL) {
+      for(i = 0; i<params_qty; i++) {
+        request->params[i].name = NULL;
+        request->params[i].value = NULL;
+      }
+      request->params_qty = params_qty;;
+    } else if (params_qty > 0){
+      free_http_request(request);
+      return NULL;
+    }
     if (form_length > 0) {
       request->form = (PTR_HTTP_FORM) malloc(sizeof(HTTP_FORM)*form_length);
     } else {
@@ -83,6 +99,7 @@ PTR_HTTP_REQUEST alloc_http_request(uint32_t headers_qty, uint32_t form_length, 
       for(i = 0; i<form_length; i++) {
         request->form[i].name = NULL;
         request->form[i].value = NULL;
+	request->form[i].type = STRING;
       }
       request->form_length = form_length;
     } else if (form_length > 0){
@@ -175,22 +192,15 @@ PTR_HTTP_RESPONSE http_get(char* url, PTR_HTTP_REQUEST request)
     memset(sp, '\0', 1024*sizeof(char));
   }
 
-  if (request->form_length != 0) {
-    if (strchr(url, '?') == NULL) {
-      sprintf(sp, "%s?", url);
+  sprintf(sp, "%s", url);
+  for (i=0; i<request->params_qty; i++) {
+    if (i == 0 && strchr(sp, '?') == NULL) {
+      sprintf(sp, "%s?%s=%s", sp, request->params[i].name, request->params[i].value);
     } else {
-      sprintf(sp, "%s", url);
+	sprintf(sp, "%s&%s=%s", sp, request->params[i].name, request->params[i].value);
     }
-    for (i=0; i<request->form_length; i++) {
-      if (i == 0 && strchr(url, '?') == NULL) {
-	sprintf(sp, "%s%s=%s", sp, request->form[i].name, request->form[i].value);
-      } else {
-	sprintf(sp, "%s&%s=%s", sp, request->form[i].name, request->form[i].value);
-      }
-    }
-  } else {
-    sprintf(sp, "%s", url);
   }
+
   curl_easy_setopt(curl_handler, CURLOPT_URL, sp);
   curl_easy_setopt(curl_handler, CURLOPT_HTTPHEADER, slist);
   curl_easy_setopt(curl_handler, CURLOPT_WRITEFUNCTION, write_body);
@@ -235,7 +245,19 @@ PTR_HTTP_RESPONSE http_post(char* url, PTR_HTTP_REQUEST request)
     curl_easy_setopt(curl_handler, CURLOPT_POSTFIELDSIZE, request->body_length);
   } else {
     for (i=0; i<request->form_length; i++) {
-      curl_formadd(&post, &last, CURLFORM_PTRNAME, request->form[i].name, CURLFORM_PTRCONTENTS, request->form[i].value, CURLFORM_END);
+      switch (request->form[i].type) {
+      case STRING:
+	curl_formadd(&post, &last, CURLFORM_PTRNAME, request->form[i].name, CURLFORM_PTRCONTENTS, request->form[i].value, CURLFORM_END);
+	break;
+      case BINARY:
+	curl_formadd(&post, &last, CURLFORM_PTRNAME, request->form[i].name, CURLFORM_PTRCONTENTS, request->form[i].value, CURLFORM_END);
+	break;
+      case FILENAME:
+	curl_formadd(&post, &last, CURLFORM_PTRNAME, request->form[i].name, CURLFORM_FILE, request->form[i].value, CURLFORM_END);
+	break;
+      default:
+	break;
+      }
     }
     curl_easy_setopt(curl_handler, CURLOPT_HTTPPOST, post);
   }
@@ -274,21 +296,13 @@ PTR_HTTP_RESPONSE https_get(char* url, PTR_HTTP_REQUEST request)
     curl_slist_append(slist, sp);
     memset(sp, '\0', 1024*sizeof(char));
   }
-  if (request->form_length != 0) {
-    if (strchr(url, '?') == NULL) {
-      sprintf(sp, "%s?", url);
+  sprintf(sp, "%s", url);
+  for (i=0; i<request->params_qty; i++) {
+    if (i == 0 && strchr(sp, '?') == NULL) {
+      sprintf(sp, "%s?%s=%s", sp, request->params[i].name, request->params[i].value);
     } else {
-      sprintf(sp, "%s", url);
-    }   
-    for (i=0; i<request->form_length; i++) {
-      if (i == 0 && strchr(url, '?') == NULL) {
-        sprintf(sp, "%s%s=%s", sp, request->form[i].name, request->form[i].value);
-      } else {
-        sprintf(sp, "%s&%s=%s", sp, request->form[i].name, request->form[i].value);
-      }
+      sprintf(sp, "%s&%s=%s", sp, request->params[i].name, request->params[i].value);
     }
-  } else {
-    sprintf(sp, "%s", url);
   }
   curl_easy_setopt(curl_handler, CURLOPT_URL, sp);
   curl_easy_setopt(curl_handler, CURLOPT_HTTPHEADER, slist);
@@ -338,7 +352,19 @@ PTR_HTTP_RESPONSE https_post(char* url, PTR_HTTP_REQUEST request)
     curl_easy_setopt(curl_handler, CURLOPT_POSTFIELDSIZE, request->body_length);
   } else {
     for (i=0; i<request->form_length; i++) {
-      curl_formadd(&post, &last, CURLFORM_PTRNAME, request->form[i].name, CURLFORM_PTRCONTENTS, request->form[i].value, CURLFORM_END);
+      switch (request->form[i].type) {
+      case STRING:
+        curl_formadd(&post, &last, CURLFORM_PTRNAME, request->form[i].name, CURLFORM_PTRCONTENTS, request->form[i].value, CURLFORM_END);
+        break;
+      case BINARY:
+	curl_formadd(&post, &last, CURLFORM_PTRNAME, request->form[i].name, CURLFORM_PTRCONTENTS, request->form[i].value, CURLFORM_END);
+	break;
+      case FILENAME:
+	curl_formadd(&post, &last, CURLFORM_PTRNAME, request->form[i].name, CURLFORM_FILE, request->form[i].value, CURLFORM_END);
+        break;
+      default:
+	break;
+      }
     }
     curl_easy_setopt(curl_handler, CURLOPT_HTTPPOST, post);
   }

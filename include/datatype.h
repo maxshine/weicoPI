@@ -62,6 +62,13 @@ typedef struct user_entity {
 
 } USER_ENTITY, *PTR_USER_ENTITY;
 
+
+typedef enum http_form_type {
+  STRING = 0,
+  BINARY = 1,
+  FILENAME = 2
+} ENUM_HTTP_FORM_TYPE;
+
 typedef struct http_header {
   char *name;
   char *value;
@@ -71,10 +78,19 @@ typedef struct http_header {
 typedef struct http_form {
   char *name;
   char *value;
+  ENUM_HTTP_FORM_TYPE type;
   struct http_form* next;
 } HTTP_FORM, *PTR_HTTP_FORM;
 
+typedef struct http_param {
+  char *name;
+  char *value;
+  struct http_form* next;
+} HTTP_PARAM, *PTR_HTTP_PARAM;
+
 typedef struct http_request {
+  PTR_HTTP_PARAM params;
+  uint32_t params_qty;
   PTR_HTTP_HEADER headers;
   uint32_t headers_qty;
   PTR_HTTP_FORM form;

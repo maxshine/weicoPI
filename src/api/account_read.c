@@ -8,9 +8,9 @@
 #include "constants.h"
 #include "debug_util.h"
 
-long get_userid(const char* access_token)
+long get_account_userid(const char* access_token)
 {
-        debug_log_enter(FINE, "get_userid", "s", access_token);
+        debug_log_enter(FINE, __func__, "s", access_token);
 
 	cJSON* root = NULL;
 	long uid = 0L;
@@ -25,7 +25,7 @@ long get_userid(const char* access_token)
 	uid = (long) cJSON_GetObjectItem(root, "uid")->valuedouble;
 
 	cJSON_Delete(root);
-        debug_log_exit(FINE, "get_userid");
+        debug_log_exit(FINE, __func__);
         return uid;
 }
 

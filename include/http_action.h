@@ -5,7 +5,7 @@
 
 #define HTTP_ACTION_H
 
-PTR_HTTP_REQUEST alloc_http_request(uint32_t headers_qty, uint32_t form_length, uint32_t body_length);
+PTR_HTTP_REQUEST alloc_http_request(uint32_t params_qty, uint32_t headers_qty, uint32_t form_length, uint32_t body_length);
 PTR_HTTP_RESPONSE alloc_http_response(uint32_t headers_qty, uint32_t body_length);
 
 void free_http_request(PTR_HTTP_REQUEST request);

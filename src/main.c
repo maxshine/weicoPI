@@ -5,7 +5,7 @@
 #include <curl/curl.h>
 #include "weibo_oath2.h"
 #include "weibo_write.h"
-#include "user_read.h"
+#include "account_read.h"
 #include "init.h"
 #include "constants.h"
 #include "debug_util.h"
@@ -36,7 +36,8 @@ void main(int argc, char *argv[])
 	get_friends_timeline(AUTHCODE, "1", "0", "1");
 	get_public_timeline(AUTHCODE, "1", "0", "1");
 	get_home_timeline(AUTHCODE, "1", "0", "1");*/
-	get_userid(AUTHCODE);
+	sprintf(USERID, "%ld", get_account_userid(AUTHCODE));
+	printf(USERID);
 	deinit_debug_log();
 	free((char*)AUTHCODE); 
 	free((char*)USERID); 
