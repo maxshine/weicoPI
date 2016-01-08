@@ -10,7 +10,8 @@
 
 void free_http_request(PTR_HTTP_REQUEST request)
 {
-  debug_log_enter(FINE, __func__, NULL);
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, NULL);
   if (request != NULL) {
     if (request->headers != NULL) {
       free(request->headers);
@@ -26,12 +27,13 @@ void free_http_request(PTR_HTTP_REQUEST request)
     }
     free(request);
   }
-  debug_log_exit(FINE, __func__);
+  debug_log_exit(FINE, func_name);
 }
 
 void free_http_response(PTR_HTTP_RESPONSE response)
 {
-  debug_log_enter(FINE,__func__, NULL);
+  constchar* func_name= __func__;
+  debug_log_enter(FINE, func_name, NULL);
   if (response != NULL) {
     if (response->headers != NULL) {
       free(response->headers);
@@ -47,12 +49,13 @@ void free_http_response(PTR_HTTP_RESPONSE response)
     }
     free(response);
   }
-  debug_log_exit(FINE, __func__);
+  debug_log_exit(FINE, func_name);
 }
 
 PTR_HTTP_REQUEST alloc_http_request(uint32_t params_qty, uint32_t headers_qty, uint32_t form_length, uint32_t body_length)
 {
-  debug_log_enter(FINE,__func__, NULL);
+  constchar* func_name= __func__;
+  debug_log_enter(FINE, func_name, NULL);
   uint32_t i = 0;
   PTR_HTTP_REQUEST request = (PTR_HTTP_REQUEST) malloc(sizeof(HTTP_REQUEST));
 
@@ -120,13 +123,14 @@ PTR_HTTP_REQUEST alloc_http_request(uint32_t params_qty, uint32_t headers_qty, u
       return NULL;
     }
   }
-  debug_log_exit(FINE, __func__);
+  debug_log_exit(FINE, func_name);
   return request;
 }
 
 PTR_HTTP_RESPONSE alloc_http_response(uint32_t headers_qty, uint32_t body_length)
 {
-  debug_log_enter(FINE,__func__, NULL);
+  constchar* func_name= __func__;
+  debug_log_enter(FINE, func_name, NULL);
   uint32_t i = 0;
   PTR_HTTP_RESPONSE response = (PTR_HTTP_RESPONSE) malloc(sizeof(HTTP_RESPONSE));
 
@@ -168,13 +172,14 @@ PTR_HTTP_RESPONSE alloc_http_response(uint32_t headers_qty, uint32_t body_length
       return NULL;
     }
   }
-  debug_log_exit(FINE, __func__);
+  debug_log_exit(FINE, func_name);
   return response;
 }
 
 PTR_HTTP_RESPONSE http_get(char* url, PTR_HTTP_REQUEST request)
 {
-  debug_log_enter(FINE,__func__, NULL);
+  constchar* func_name= __func__;
+  debug_log_enter(FINE, func_name, NULL);
   int i = 0;
   char* sp = (char*) malloc(1024*sizeof(char));
   memset(sp, '\0', 1024*sizeof(char));
@@ -212,13 +217,14 @@ PTR_HTTP_RESPONSE http_get(char* url, PTR_HTTP_REQUEST request)
   curl_easy_cleanup(curl_handler);
   curl_slist_free_all(slist);
   free(sp);
-  debug_log_exit(FINE, __func__);
+  debug_log_exit(FINE, func_name);
   return response;
 }
 
 PTR_HTTP_RESPONSE http_post(char* url, PTR_HTTP_REQUEST request)
 {
-  debug_log_enter(FINE,__func__, NULL);
+  constchar* func_name= __func__;
+  debug_log_enter(FINE, func_name, NULL);
   int i = 0;
   char* sp = (char*) malloc(1024*sizeof(char));
   memset(sp, '\0', 1024*sizeof(char));
@@ -270,13 +276,14 @@ PTR_HTTP_RESPONSE http_post(char* url, PTR_HTTP_REQUEST request)
   curl_easy_cleanup(curl_handler);
   curl_slist_free_all(slist);
   free(sp);
-  debug_log_exit(FINE, __func__);
+  debug_log_exit(FINE, func_name);
   return response;
 }
 
 PTR_HTTP_RESPONSE https_get(char* url, PTR_HTTP_REQUEST request)
 {
-  debug_log_enter(FINE,__func__, NULL);
+  constchar* func_name= __func__;
+  debug_log_enter(FINE, func_name, NULL);
   int i = 0;
   char* sp = (char*) malloc(1024*sizeof(char));
   memset(sp, '\0', 1024*sizeof(char));
@@ -315,13 +322,14 @@ PTR_HTTP_RESPONSE https_get(char* url, PTR_HTTP_REQUEST request)
   curl_easy_cleanup(curl_handler);
   curl_slist_free_all(slist);
   free(sp);
-  debug_log_exit(FINE, __func__);
+  debug_log_exit(FINE, func_name);
   return response;
 }
 
 PTR_HTTP_RESPONSE https_post(char* url, PTR_HTTP_REQUEST request)
 {
-  debug_log_enter(FINE,__func__, NULL);
+  constchar* func_name= __func__;
+  debug_log_enter(FINE, func_name, NULL);
   int i = 0;
   char* sp = (char*) malloc(1024*sizeof(char));
   memset(sp, '\0', 1024*sizeof(char));
@@ -377,6 +385,6 @@ PTR_HTTP_RESPONSE https_post(char* url, PTR_HTTP_REQUEST request)
   curl_easy_cleanup(curl_handler);
   curl_slist_free_all(slist);
   free(sp);
-  debug_log_exit(FINE, __func__);
+  debug_log_exit(FINE, func_name);
   return response;
 }

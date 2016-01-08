@@ -7,7 +7,7 @@
 #define OFF UINT_MAX
 #define FATAL 10000
 #define SEVERE 1000
-#define WARNING 100
+#define WARN 100
 #define INFO 10
 #define FINE 9
 #define FINER 8
@@ -16,9 +16,6 @@
 #define DEFAULT_LOG_LEVEL 10
 
 typedef int LogLevel;
-
-typedef enum BOOL {FALSE=0, TRUE=1} BOOL;
-
 
 typedef struct log_descriptor {
 	FILE * log_file_handler;

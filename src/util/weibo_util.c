@@ -1,14 +1,40 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include "weibo_datatype.h"
 #include "datatype.h"
 #include "constants.h"
 #include "cJSON.h"
 #include "debug_util.h"
 
+PTR_COMMENT_ENTITY init_comment_entity()
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, NULL);
+  int i = 0;
+  PTR_COMMENT_ENTITY ptr_comment_entity = (PTR_COMMENT_ENTITY) malloc(sizeof(COMMENT_ENTITY));
+  if(ptr_comment_entity != NULL)
+    {
+      ptr_comment_entity->created_at = NULL;
+      ptr_comment_entity->id = 0L;
+      ptr_comment_entity->mid = NULL;
+      ptr_comment_entity->text = NULL;
+      ptr_comment_entity->source = NULL;
+      ptr_comment_entity->user = NULL;
+      ptr_comment_entity->_status = NULL;
+      ptr_comment_entity->prev = NULL;
+      ptr_comment_entity->next = NULL;
+    }
+  debug_log_exit(FINE, func_name);
+  return ptr_comment_entity;
+}
+
+
 PTR_WEIBO_ENTITY init_weibo_entity()
 {
-	debug_log_enter(FINE, "init_weibo_entity", NULL);
+        const char *func_name = __func__;
+	debug_log_enter(FINE, func_name, NULL);
 	int i = 0;
 	PTR_WEIBO_ENTITY ptr_weibo_entity = (PTR_WEIBO_ENTITY) malloc(sizeof(WEIBO_ENTITY));
 	if(ptr_weibo_entity != NULL)
@@ -21,26 +47,19 @@ PTR_WEIBO_ENTITY init_weibo_entity()
 		ptr_weibo_entity->source = NULL;
 		ptr_weibo_entity->comments_count = 0;
 		ptr_weibo_entity->reposts_count = 0;
-		ptr_weibo_entity->attitudes_count = 0;
-		ptr_weibo_entity->geo = NULL;
 		ptr_weibo_entity->user = NULL;	
 		ptr_weibo_entity->retweeted_status = NULL;
 		ptr_weibo_entity->prev = NULL;
 		ptr_weibo_entity->next = NULL;
-		ptr_weibo_entity->pic_urls_qty = 0;
-		i = 0;
-		while(i++ < MAX_PIC_URL_QTY)
-		{
-			(ptr_weibo_entity->pic_urls)[i-1] = NULL;
-		}
+
 	}
-	debug_log_exit(FINE, "init_weibo_entity");
+	debug_log_exit(FINE, func_name);
 	return ptr_weibo_entity;
 }
 
 PTR_USER_ENTITY init_user_entity() 
 {
-	debug_log_enter(FINE, "init_user_entity", NULL);
+	debug_log_enter(FINE, __func__, NULL);
 	PTR_USER_ENTITY ptr_user_entity = (PTR_USER_ENTITY) malloc(sizeof(USER_ENTITY));
 	if(ptr_user_entity != NULL)
 	{
@@ -57,10 +76,11 @@ PTR_USER_ENTITY init_user_entity()
 		ptr_user_entity->statuses_count = 0;
 		ptr_user_entity->online_status = 0;
 		ptr_user_entity->favorites_count = 0;
+		ptr_user_entity->verified = 0;
 		ptr_user_entity->prev = NULL;
 		ptr_user_entity->next = NULL;
 	}
-	debug_log_exit(FINE, "init_user_entity");
+	debug_log_exit(FINE, __func__);
 	return ptr_user_entity;
 }
 
@@ -85,9 +105,48 @@ PTR_GEO_ENTITY init_geo_entity()
 
 }
 
+void destroy_comment_entity(PTR_COMMENT_ENTITY ptr_comment_entity)
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, "p", ptr_comment_entity);
+
+  if(ptr_comment_entity->created_at != NULL)
+    {
+      free(ptr_comment_entity->created_at);
+      ptr_comment_entity->created_at = NULL;
+    }
+  if(ptr_comment_entity->text != NULL)
+    {
+      free(ptr_comment_entity->text);
+      ptr_comment_entity->text = NULL;
+    }
+  if(ptr_comment_entity->source != NULL)
+    {
+      free(ptr_comment_entity->source);
+      ptr_comment_entity->source = NULL;
+    }
+  if(ptr_comment_entity->mid != NULL)
+    {
+      free(ptr_comment_entity->mid);
+      ptr_comment_entity->mid = NULL;
+    }
+  if(ptr_comment_entity->user != NULL)
+    {
+      destroy_user_entity(ptr_comment_entity->user);
+      ptr_user_entity->gender = NULL;
+    }
+  if(ptr_comment_entity->status != NULL)
+    {
+      destroy_weibo_entity(ptr_comment_entity->status);
+      ptr_comment_entity->status = NULL;
+    }
+  free(ptr_comment_entity);
+  debug_log_exit(FINE, func_name);
+}
+
 void destroy_user_entity(PTR_USER_ENTITY ptr_user_entity)
 {
-	debug_log_enter(FINE, "destroy_user_entity", "p", ptr_user_entity);
+	debug_log_enter(FINE, __func__, "p", ptr_user_entity);
 	if(ptr_user_entity->idstr != NULL)
 	{
 		free(ptr_user_entity->idstr);
@@ -124,7 +183,7 @@ void destroy_user_entity(PTR_USER_ENTITY ptr_user_entity)
 		ptr_user_entity->profile_url = NULL;
 	}
 	free(ptr_user_entity);
-	debug_log_exit(FINE, "destroy_user_entity");
+	debug_log_exit(FINE, __func__);
 }
 
 void destroy_geo_entity(PTR_GEO_ENTITY ptr_geo_entity)
@@ -181,7 +240,8 @@ void destroy_geo_entity(PTR_GEO_ENTITY ptr_geo_entity)
 
 void destroy_weibo_entity(PTR_WEIBO_ENTITY ptr_weibo_entity)
 {
-	debug_log_enter(FINE, "destroy_weibo_entity", "p", ptr_weibo_entity);
+        const char *func_name = __func__;
+	debug_log_enter(FINE, func_name, "p", ptr_weibo_entity);
 
 	int i = 0;
 
@@ -210,24 +270,10 @@ void destroy_weibo_entity(PTR_WEIBO_ENTITY ptr_weibo_entity)
 		free(ptr_weibo_entity->source);
 		ptr_weibo_entity->source = NULL;
 	}
-	if(ptr_weibo_entity->geo != NULL)
-	{
-		destroy_geo_entity(ptr_weibo_entity->geo);
-		ptr_weibo_entity->geo = NULL;
-	}
 	if(ptr_weibo_entity->user != NULL)
 	{
 		destroy_user_entity(ptr_weibo_entity->user);
 		ptr_weibo_entity->user = NULL;
-	}
-	if(ptr_weibo_entity->pic_urls_qty != 0)
-	{
-		i = 0;
-		while(i++ < ptr_weibo_entity->pic_urls_qty)
-		{
-			free((ptr_weibo_entity->pic_urls)[i-1]);
-			(ptr_weibo_entity->pic_urls)[i-1] = NULL;
-		}
 	}
 	if(ptr_weibo_entity->retweeted_status != NULL)
 	{
@@ -235,14 +281,66 @@ void destroy_weibo_entity(PTR_WEIBO_ENTITY ptr_weibo_entity)
 		ptr_weibo_entity->retweeted_status = NULL;
 	}
 	free(ptr_weibo_entity);	
-	debug_log_exit(FINE, "destroy_weibo_entity");
+	debug_log_exit(FINE, func_name);
 }
 
-PTR_USER_ENTITY create_user_from_json(cJSON* json_object)
+PTR_COMMENT_ENTITY create_comment_entity_from_json(cJSON* json_object)
 {
-	debug_log_enter(FINE, "create_user_from_json", "p",json_object); 
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, "p", json_object);
+  char *debug = cJSON_Print(json_object);
+  debug_log(FINEST, func_name, debug);
+  free(debug);
+
+  cJSON* ptr_json = NULL;
+  int json_length = 0;
+  PTR_COMMENT_ENTITY ptr_comment_entity = init_comment_entity();
+  if(ptr_user_entity == NULL) {
+    debug_log(SEVERE, __func__, "SEVERE ERROR : allocate comment entity object \n");
+    return NULL;
+  }
+
+  if(cJSON_GetObjectItem(json_object, "created_at") != NULL) {
+    ptr_json = cJSON_GetObjectItem(json_object, "created_at");
+    json_length = strlen(ptr_json->valuestring);
+    ptr_comment_entity->created_at = (char*) malloc((1+json_length)*sizeof(char));
+    strcpy(ptr_comment_entity->created_at, ptr_json->valuestring);
+  }
+  if(cJSON_GetObjectItem(json_object, "mid") != NULL) {
+    ptr_json = cJSON_GetObjectItem(json_object, "mid");
+    json_length = strlen(ptr_json->valuestring);
+    ptr_comment_entity->idstr = (char*) malloc((1+json_length)*sizeof(char));
+    strcpy(ptr_comment_entity->mid, ptr_json->valuestring);
+  }
+  if(cJSON_GetObjectItem(json_object, "text") != NULL) {
+    ptr_json = cJSON_GetObjectItem(json_object, "text");
+    ptr_comment_entity->text = strdup(ptr_json->valuestring);
+  }
+  if(cJSON_GetObjectItem(json_object, "source") != NULL) {
+    ptr_json = cJSON_GetObjectItem(json_object, "source");
+    ptr_comment_entity->text = strdup(ptr_json->valuestring);
+  }
+  if(cJSON_GetObjectItem(json_object, "id") != NULL) {
+    ptr_json = cJSON_GetObjectItem(json_object, "id");
+    ptr_comment_entity->id =(uint64_t) ptr_json->valuedouble;
+  }
+  if(cJSON_GetObjectItem(json_object, "user") != NULL && cJSON_GetObjectItem(json_object, "user")->type != cJSON_NULL) {
+      ptr_json = cJSON_GetObjectItem(json_object, "user");
+      ptr_weibo_entity->user = create_user_from_json(ptr_json);
+  }
+  if(cJSON_GetObjectItem(json_object, "status") != NULL && cJSON_GetObjectItem(json_object, "status")->type != cJSON_NULL) {
+      ptr_json = cJSON_GetObjectItem(json_object, "status");
+      ptr_weibo_entity->user = create_status_from_json(ptr_json);
+  }
+  return ptr_comment_entity;
+}
+
+PTR_USER_ENTITY create_user_entity_from_json(cJSON* json_object)
+{
+        const char* func_name = __func__;
+	debug_log_enter(FINE, func_name, "p", json_object); 
 	char *debug = cJSON_Print(json_object);
-	debug_log(FINEST, "create_user_from_json", debug);
+	debug_log(FINEST, func_name, debug);
 	free(debug);
 
 	cJSON* ptr_json = NULL;
@@ -252,7 +350,7 @@ PTR_USER_ENTITY create_user_from_json(cJSON* json_object)
 
 	if(ptr_user_entity == NULL)
 	{
-		debug_log(SEVERE, "create_user_from_json", "SEVERE ERROR : Cannot create user data from HTTP response! \n");
+		debug_log(SEVERE, __func__, "SEVERE ERROR : allocate user entity object \n");
 		return NULL;
 	}
 
@@ -263,6 +361,7 @@ PTR_USER_ENTITY create_user_from_json(cJSON* json_object)
 		ptr_user_entity->idstr = (char*) malloc((1+json_length)*sizeof(char));
 		strcpy(ptr_user_entity->idstr, ptr_json->valuestring);
 	}
+
 	if(cJSON_GetObjectItem(json_object, "screen_name") != NULL)		
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "screen_name");
@@ -308,39 +407,44 @@ PTR_USER_ENTITY create_user_from_json(cJSON* json_object)
 	if(cJSON_GetObjectItem(json_object, "id") != NULL)		
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "id");
-		ptr_user_entity->id = (long) ptr_json->valuedouble;
+		ptr_user_entity->id = (uint64_t) ptr_json->valuedouble;
 	}
 	if(cJSON_GetObjectItem(json_object, "friends_count") != NULL)		
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "friends_count");
-		ptr_user_entity->friends_count = (int) ptr_json->valuedouble;
+		ptr_user_entity->friends_count = ptr_json->valueint;
 	}
 	if(cJSON_GetObjectItem(json_object, "followers_count") != NULL)		
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "followers_count");
-		ptr_user_entity->followers_count = (int) ptr_json->valuedouble;
+		ptr_user_entity->followers_count = ptr_json->valueint;
 	}
 	if(cJSON_GetObjectItem(json_object, "statuses_count") != NULL)		
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "statuses_count");
-		ptr_user_entity->statuses_count = (long) ptr_json->valuedouble;
+		ptr_user_entity->statuses_count = ptr_json->valueint;
 	}
 	if(cJSON_GetObjectItem(json_object, "favorites_count") != NULL)		
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "favorites_count");
-		ptr_user_entity->favorites_count = (long) ptr_json->valuedouble;
+		ptr_user_entity->favorites_count = (int) ptr_json->valuedouble;
 	}
 	if(cJSON_GetObjectItem(json_object, "online_status") != NULL)		
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "online_status");
-		ptr_user_entity->online_status = (long) ptr_json->valuedouble;
+		ptr_user_entity->online_status = (BOOL) ptr_json->valueint;
 	}
+        if(cJSON_GetObjectItem(json_object, "verified") != NULL)
+	  {
+	    ptr_json = cJSON_GetObjectItem(json_object, "verified");
+	    ptr_user_entity->verified = (BOOL) ptr_json->valueint;
+	  }
 
-	debug_log_exit(FINE, "create_user_from_json");
+	debug_log_exit(FINE, func_name);
 	return ptr_user_entity;
 }
 
-PTR_GEO_ENTITY create_geo_from_json(cJSON* json_object)
+PTR_GEO_ENTITY create_geo_entity_from_json(cJSON* json_object)
 {
 	debug_log_enter(FINE, "create_geo_from_json", "p",json_object); 
 	char *debug = cJSON_Print(json_object);
@@ -426,11 +530,12 @@ PTR_GEO_ENTITY create_geo_from_json(cJSON* json_object)
 	return ptr_geo_entity;
 }
 
-PTR_WEIBO_ENTITY create_weibo_from_json(cJSON* json_object)
+PTR_WEIBO_ENTITY create_weibo_entity_from_json(cJSON* json_object)
 {
-	debug_log_enter(FINE, "create_weibo_from_json", "p",json_object); 
+        const char* func_name = __func__;
+	debug_log_enter(FINE, func_name, "p",json_object); 
 	char *debug = cJSON_Print(json_object);
-	debug_log(FINEST, "create_weibo_from_json", debug);
+	debug_log(FINEST, func_name, debug);
 	free(debug);
 
 	cJSON* ptr_json = NULL;
@@ -440,7 +545,7 @@ PTR_WEIBO_ENTITY create_weibo_from_json(cJSON* json_object)
 	PTR_WEIBO_ENTITY ptr_weibo_entity = init_weibo_entity();
 	if(ptr_weibo_entity == NULL)
 	{
-		debug_log(SEVERE, "create_weibo_from_json", "SEVERE ERROR : Cannot create weibo data from HTTP response! \n");
+		debug_log(SEVERE, func_name, "SEVERE ERROR : Cannot create weibo data from HTTP response! \n");
 		return NULL;
 	}
 
@@ -482,39 +587,52 @@ PTR_WEIBO_ENTITY create_weibo_from_json(cJSON* json_object)
 	if(cJSON_GetObjectItem(json_object, "retweeted_status") != NULL)		
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "retweeted_status");
-		ptr_weibo_entity->retweeted_status = create_weibo_from_json(ptr_json);
+		ptr_weibo_entity->retweeted_status = create_weibo_entity_from_json(ptr_json);
 	}
-	if(cJSON_GetObjectItem(json_object, "pic_urls") != NULL)
-	{
-		ptr_json = cJSON_GetObjectItem(json_object, "pic_urls");
-		json_length = cJSON_GetArraySize(ptr_json);
-		ptr_weibo_entity->pic_urls_qty = json_length;
-		i = 0;
-		while(i++ < ptr_weibo_entity->pic_urls_qty)
-		{
-			json_length = strlen(cJSON_GetObjectItem(cJSON_GetArrayItem(ptr_json, i-1), "thumbnail_pic")->valuestring);
-			(ptr_weibo_entity->pic_urls)[i-1] = (char*) malloc((1+json_length)*sizeof(char));
-			strcpy((ptr_weibo_entity->pic_urls)[i-1], cJSON_GetObjectItem(cJSON_GetArrayItem(ptr_json, i-1), "thumbnail_pic")->valuestring);
-		}
-	
-	}
+
 	if(cJSON_GetObjectItem(json_object, "id") != NULL)
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "id");
-		ptr_weibo_entity->id = (long)ptr_json->valuedouble;
+		ptr_weibo_entity->id = (uint64_t) ptr_json->valuedouble;
 	}
 	if(cJSON_GetObjectItem(json_object, "user") != NULL && cJSON_GetObjectItem(json_object, "user")->type != cJSON_NULL)
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "user");
 		ptr_weibo_entity->user = create_user_from_json(ptr_json);
 	}
-	if(cJSON_GetObjectItem(json_object, "geo") != NULL && cJSON_GetObjectItem(json_object, "geo")->type != cJSON_NULL)
+        if(cJSON_GetObjectItem(json_object, "reposts_count") != NULL)
+	  {
+	    ptr_json = cJSON_GetObjectItem(json_object, "reposts_count");
+	    ptr_weibo_entity->reposts_count =  ptr_json->valueint;
+	  }
+        if(cJSON_GetObjectItem(json_object, "comments_count") != NULL)
 	{
-		ptr_json = cJSON_GetObjectItem(json_object, "geo");
-		ptr_weibo_entity->geo = create_geo_from_json(ptr_json);
+	    ptr_json = cJSON_GetObjectItem(json_object, "comments_count");
+	    ptr_weibo_entity->comments_count = ptr_json->valueint;
 	}
 
-	debug_log_exit(FINE, "create_weibo_from_json");
+	debug_log_exit(FINE, func_name);
 	return ptr_weibo_entity;
 }
 
+/* 
+   FALSE -> No error
+   TRUE -> error happends, it's printed in log
+*/
+BOOL check_api_error(cJSON* json)
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, NULL);
+  int error_code;
+  char* request;
+  cJSON* error_msg = NULL;
+  char msg[255];
+  if ((error_msg = cJSON_GetObjectItem(json, "error"))->type != cJSON_NULL) {
+    error_code = cJSON_GetObjectItem(json, "error_code");
+    request = cJSON_GetObjectItem(json, "request");
+    snprintf(msg, 255, "Error for API: %s, Code=%d, Error Details=%s", request, error_code, error_msg);
+    debug_log(WARN, func_name, msg);
+    return TRUE;
+  }
+  return FALSE;
+}

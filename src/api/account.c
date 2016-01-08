@@ -2,15 +2,17 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "cJSON.h"
 #include "datatype.h"
 #include "http_action.h"
 #include "constants.h"
 #include "debug_util.h"
 
-long get_userid(const char* access_token)
+uint64_t get_account_userid(const char* access_token)
 {
-        debug_log_enter(FINE, "get_userid", "s", access_token);
+        const char* func_name = __func__;
+        debug_log_enter(FINE, func_name, "s", access_token);
 
 	cJSON* root = NULL;
 	long uid = 0L;
@@ -19,13 +21,15 @@ long get_userid(const char* access_token)
 	PTR_HTTP_RESPONSE response = NULL;
 	request->params[0].name = "access_token";
 	request->params[0].value = access_token;
-	response = https_get(WEIBO_GET_USERID_URL, request);
+	response = https_get(WEIBO_GET_ACCOUNTID_URL, request);
+	if (response->status_code != 200) {
+	  return NULL;
+	}
 
 	root = cJSON_Parse((char*)(response->body));
-	uid = (long) cJSON_GetObjectItem(root, "uid")->valuedouble;
+	uid = (uint64_t) cJSON_GetObjectItem(root, "uid")->valuedouble;
 
 	cJSON_Delete(root);
-        debug_log_exit(FINE, "get_userid");
+        debug_log_exit(FINE, func_name);
         return uid;
 }
-

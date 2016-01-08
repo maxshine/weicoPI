@@ -5,7 +5,7 @@
 #include <curl/curl.h>
 #include "weibo_oath2.h"
 #include "weibo_write.h"
-#include "account_read.h"
+#include "account.h"
 #include "init.h"
 #include "constants.h"
 #include "debug_util.h"
