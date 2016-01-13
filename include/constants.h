@@ -23,6 +23,10 @@
 #define WEIBO_GET_FRIENDS_TIMELINE_URL "https://api.weibo.com/2/statuses/friends_timeline.json"
 #define WEIBO_GET_PUBLIC_TIMELINE_URL "https://api.weibo.com/2/statuses/public_timeline.json"
 #define WEIBO_GET_HOME_TIMELINE_URL "https://api.weibo.com/2/statuses/home_timeline.json"
+#define WEIBO_SHOW_WEIBO_URL "https://api.weibo.com/2/statuses/show.json"
+#define WEIBO_GET_USER_TIMELINE_IDS_URL "https://api.weibo.com/2/statuses/user_timeline/ids.json"
+#define WEIBO_GET_FRIENDS_TIMELINE_IDS_URL "https://api.weibo.com/2/statuses/friends_timeline/ids.json"
+
 
 #define WEIBO_GET_ACCOUNTID_URL "https://api.weibo.com/2/account/get_uid.json"
 #define WEIBO_SHOW_USER_URL "https://api.weibo.com/2/users/show.json"
