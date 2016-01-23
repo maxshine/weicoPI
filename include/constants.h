@@ -44,5 +44,6 @@
 #define WEIBO_SHOW_COMMENTS_URL "https://api.weibo.com/2/comments/show.json"
 
 #define WEIBO_POST_BUFFER_LENGTH 280
+#define WEIBO_CONTENT_LIMIT 140
 
 #endif
