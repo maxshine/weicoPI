@@ -10,8 +10,12 @@
 #include "constants.h"
 #include "debug_util.h"
 
-const char* AUTHCODE = NULL;
-char* USERID = NULL;
+const char* ACCESS_TOKEN = NULL;
+const char* USERID = NULL;
+const char* ACCOUNTID = NULL;
+const char* FRIENDID = NULL;
+uint32_t PAGE = 0;
+uint32_t WEIBO_TYPE = 0; /* 0 --  public timeline; 1 -- user; 2 -- friend timeline*/
 
 void main(int argc, char *argv[])
 {
@@ -20,7 +24,7 @@ void main(int argc, char *argv[])
 	memset(weibo, 0, WEIBO_POST_BUFFER_LENGTH*sizeof(char));
 	sprintf(weibo, "%s", argv[1]);
 	init_debug_log("weicoPi.log", FINEST);
-	AUTHCODE = get_auth_code("/home/pi/weicoPi/config/authorization_code");
+	ACCESS_TOKEN = get_auth_code("/home/pi/weicoPi/config/authorization_code");
 	USERID = (char*)malloc(20*sizeof(char));
 	memset(USERID, 0, 20*sizeof(char));
  

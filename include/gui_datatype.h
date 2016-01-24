@@ -42,7 +42,7 @@ typedef struct mywindow {
   uint32_t height;
 
   WND_TYPE type;
-
+  PTR_WND_MANAGER wm_mgr;
   WINDOW* curses_wnd;
   WND_INITIALIZER initializer;
   WND_INITIALIZER destroyer;
@@ -53,6 +53,7 @@ typedef struct mywindow {
 
   struct mywindow* parent;
   struct mywindow* children;
+  struct mywindow* prev;
   struct mywindow* next
   
 } WND, *PTR_WND;
@@ -60,7 +61,7 @@ typedef struct mywindow {
 typedef struct mywindow_manager {
   uint32_t screen_width;
   uint32_t screen_height;
-  WND* wnd_list;
+  WND* root_wnd_list;
   WND* focus;
   EVENT_HANDLER handler;
   WND_MANAGER_OPS pop;
