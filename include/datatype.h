@@ -4,7 +4,7 @@
 
 #define DATATYPE_H
 
-typedef enum BOOL {FALSE=0, TRUE=1} BOOL;
+typedef enum BOOL {False=0, True=1} BOOL;
 
 typedef enum http_form_type {
   STRING = 0,

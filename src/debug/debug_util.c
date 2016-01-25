@@ -86,7 +86,7 @@ BOOL init_debug_log(const char* file_name, const LogLevel effective_level)
 	if (passwd != NULL) {
 		if (passwd->pw_dir == NULL) {
 			puts("Please ensure the user has home directory configured\n");
-			return FALSE;
+			return False;
 		}
 		dir_handler = opendir(passwd->pw_dir);
 		if (errno == ENOENT || errno == ENOTDIR) {
@@ -107,18 +107,19 @@ BOOL init_debug_log(const char* file_name, const LogLevel effective_level)
 		global_log_descriptor.log_file_handler = fopen(absolute_file_name, "a+");
 		free(absolute_file_name);
 		if (global_log_descriptor.log_file_handler == NULL) {
-			return FALSE;	
+			return False;	
 		}
 	} else {
-		return FALSE;		
+		return False;		
 	}
-	return TRUE;
+	return True;
 }
 
 BOOL deinit_debug_log(void)
 {
 	fflush(global_log_descriptor.log_file_handler);
 	fclose(global_log_descriptor.log_file_handler);
+	return True;
 }
 
 void debug_log_enter(LogLevel level, const char* function_name, const char* format, ...)

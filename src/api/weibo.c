@@ -9,6 +9,7 @@
 #include "http_action.h"
 #include "constants.h"
 #include "debug_util.h"
+#include "weibo_util.h"
 
 BOOL create_weibo_text(const char* access_token, const char* text)
 {
@@ -26,16 +27,16 @@ BOOL create_weibo_text(const char* access_token, const char* text)
 
   response = https_post(WEIBO_CREATE_URL, request);
   if (response->status_code != 200) {
-    return FALSE;
+    return False;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
     cJSON_Delete(root);
-    return FALSE;
+    return False;
   }
-
-  return TRUE;
+  debug_log_exit(FINE, func_name);
+  return True;
 }
 
 BOOL destroy_weibo(const char* access_token, const char* weibo_id)
@@ -54,16 +55,16 @@ BOOL destroy_weibo(const char* access_token, const char* weibo_id)
 
   response = https_post(WEIBO_CREATE_URL, request);
   if (response->status_code != 200) {
-    return FALSE;
+    return False;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
     cJSON_Delete(root);
-    return FALSE;
+    return False;
   }
-
-  return TRUE;
+  debug_log_exit(FINE, func_name);
+  return True;
 }
 
 BOOL repost_weibo(const char* access_token, const char* text, const char* weibo_id)
@@ -85,16 +86,16 @@ BOOL repost_weibo(const char* access_token, const char* text, const char* weibo_
 
   response = https_post(WEIBO_REPOST_URL, request);
   if (response->status_code != 200) {
-    return FALSE;
+    return False;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
     cJSON_Delete(root);
-    return FALSE;
+    return False;
   }
-
-  return TRUE;
+  debug_log_exit(FINE, func_name);
+  return True;
 }
 
 BOOL create_weibo_pic(const char* access_token, const char* text, const char* pic_name)
@@ -112,20 +113,20 @@ BOOL create_weibo_pic(const char* access_token, const char* text, const char* pi
   request->form[1].type = STRING;
   request->form[2].name = "pic";
   request->form[2].value = pic_name;
-  request->form[2].value = FILENAME;
+  request->form[2].type = FILENAME;
 
   response = https_post(WEIBO_CREATE_URL, request);
   if (response->status_code != 200) {
-    return FALSE;
+    return False;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
     cJSON_Delete(root);
-    return FALSE;
+    return False;
   }
-
-  return TRUE;
+  debug_log_exit(FINE, func_name);
+  return True;
 }
 
 PTR_WEIBO_ENTITY show_single_weibo_byid(const char* access_token, const char* weibo_id)
@@ -193,7 +194,7 @@ PTR_WEIBO_ENTITY get_user_timeline_byid(const char* access_token, const char* ui
   cnt = cJSON_GetArraySize(cJSON_GetObjectItem(root, "statuses"));
   for (i=0; i<cnt; i++) {
     weibo_id = (cJSON_GetArrayItem(cJSON_GetObjectItem(root, "statuses"), i))->valuestring;
-    weibo = show_single_weibo(access_token, weibo_id);
+    weibo = show_single_weibo_byid(access_token, weibo_id);
     weibo->next = list_head;
     weibo->prev = NULL;
     if (list_head != NULL) {
@@ -241,7 +242,7 @@ PTR_WEIBO_ENTITY get_user_timeline_byname(const char* access_token, const char* 
   cnt = cJSON_GetArraySize(cJSON_GetObjectItem(root, "statuses"));
   for (i=0; i<cnt; i++) {
     weibo_id = (cJSON_GetArrayItem(cJSON_GetObjectItem(root, "statuses"), i))->valuestring;
-    weibo = show_single_weibo(access_token, weibo_id);
+    weibo = show_single_weibo_byid(access_token, weibo_id);
     weibo->next = list_head;
     weibo->prev = NULL;
     if (list_head != NULL) {
@@ -287,7 +288,7 @@ PTR_WEIBO_ENTITY get_friend_timeline(const char* access_token, int page)
   cnt = cJSON_GetArraySize(cJSON_GetObjectItem(root, "statuses"));
   for (i=0; i<cnt; i++) {
     weibo_id = (cJSON_GetArrayItem(cJSON_GetObjectItem(root, "statuses"), i))->valuestring;
-    weibo = show_single_weibo(access_token, weibo_id);
+    weibo = show_single_weibo_byid(access_token, weibo_id);
     weibo->next = list_head;
     weibo->prev = NULL;
     if (list_head != NULL) {

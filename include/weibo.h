@@ -1,4 +1,5 @@
 #include "datatype.h"
+#include "weibo_datatype.h"
 
 #ifndef API_WEIBO_H
 

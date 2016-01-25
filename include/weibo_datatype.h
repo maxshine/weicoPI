@@ -32,7 +32,9 @@ typedef struct comment_entity {
   char *source;
   struct user_entity* user;
   struct weibo_entity* status;
-} COMMENT_ENTITY, PTR_COMMENT_ENTITY;
+  struct comment_entity* prev;
+  struct comment_entity* next;
+} COMMENT_ENTITY, *PTR_COMMENT_ENTITY;
 
 
 typedef struct geo_entity {

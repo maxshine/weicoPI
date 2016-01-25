@@ -2,31 +2,23 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include "constants.h"
+#include "datatype.h"
+#include "weibo_datatype.h"
+#include "gui_datatype.h"
 #include "weibo.h"
 #include "comment.h"
 #include "user.h"
 #include "friend.h"
 #include "account.h"
 #include "debug_util.h"
-#include "weibo_datatype.h"
-#include "gui_datatype.h"
 
-
-PTR_WND_MANAGER wm_init(void)
-{
-  WND_MANAGER wm_mgr = malloc(sizeof(WND_MANAGER));
-  wm_mgr->focus = NULL;
-  wm_mgr->wnd_list = NULL;
-  wm_mgr->pop = wm_pop;
-  wm_mgr->push = wm_push;
-  wm_mgr->refresh = wm_refresh;
-  initscr();
-  getmaxyx(wm_mgr->height, wm_mgr->width);
-  cbreak();
-  noecho();
-  keypad(stdscr, TRUE);
-  return wm_mgr;
-}
+extern char* ACCESS_TOKEN;
+extern char* USERID;
+extern char* ACCOUNTID;
+extern char* FRIENDID;
+extern uint32_t PAGE;
+extern uint32_t WEIBO_TYPE; /* 0 --  public timeline; 1 -- user; 2 -- friend timeline*/
 
 void wm_runloop(PTR_WND_MANAGER wm_mgr)
 {
@@ -37,7 +29,8 @@ void wm_runloop(PTR_WND_MANAGER wm_mgr)
     event.key = key;
     event.type = ET_KEY_PRESSED;
     event.userdata = NULL;
-    wm_mgr->handler(wm_mgr, NULL, wm_mgr->focus, &event);
+    (wm_mgr->handler)(wm_mgr, NULL, wm_mgr->focus, &event);
+    (wm_mgr->show)(wm_mgr, NULL);
   }
 }
 
@@ -49,7 +42,7 @@ void wm_push(PTR_WND_MANAGER wm_mgr, void* data)
 
   while(current != NULL && current != wnd){
     prev = current;
-    current = next;
+    current = current->next;
   }
 
   if (current != NULL && current == wnd) {
@@ -106,11 +99,27 @@ void wm_refresh(PTR_WND_MANAGER wm_mgr, void* data)
   PTR_WND wnd = wm_mgr->root_wnd_list;
   while (wnd != NULL) {
     wborder(wnd->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
-    wnd->refresh(wm_mgr, wnd, NULL);
+    wnd->show(wm_mgr, wnd, NULL);
     wrefresh(wnd->curses_wnd);
     wnd = wnd->next;
   }
   refresh();
+}
+
+PTR_WND_MANAGER wm_init(void)
+{
+  PTR_WND_MANAGER wm_mgr = (PTR_WND_MANAGER)malloc(sizeof(WND_MANAGER));
+  wm_mgr->focus = NULL;
+  wm_mgr->root_wnd_list = NULL;
+  wm_mgr->pop = wm_pop;
+  wm_mgr->push = wm_push;
+  wm_mgr->show = wm_refresh;
+  initscr();
+  getmaxyx(stdscr, wm_mgr->height, wm_mgr->width);
+  cbreak();
+  noecho();
+  keypad(stdscr, TRUE);
+  return wm_mgr;
 }
 
 void wm_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVENT event)
@@ -126,7 +135,7 @@ void wm_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVENT even
 	  exit(EXIT_SUCCESS);
 	  break;
 	default:
-	  wm_mgr->focus->handler(wm_mgr, NULL, focus, event);
+	  wm_mgr->focus->handler(wm_mgr, NULL, wm_mgr->focus, event);
 	}
     }
 }
@@ -157,10 +166,10 @@ PTR_WND wnd_init(PTR_WND_MANAGER wm_mgr, PTR_WND parent, const char* title, uint
     }
     wnd->prev = current;
     wnd->next = NULL;
-    wnd->curses_wnd = derwin(parent->curses_wnd, weibo_field_height, weibo_field_width, weibo_field_height+1, 1);
+    wnd->curses_wnd = derwin(parent->curses_wnd, (int)(wnd->height), (int)(wnd->width), wnd->height+1, 1);
   } else {
     wnd->curses_wnd = newwin((int)height, (int)width, wnd->abs_y, wnd->abs_x);
-    wm_mgr->push(wm_mgr, wnd, NULL);
+    wm_mgr->push(wm_mgr, wnd);
   }
   return wnd;
 }
@@ -177,11 +186,11 @@ void wnd_weibo_initializer(PTR_WND self)
   self->type = WT_PANEL;
   for (i=0; i<weibo_field_cnt; i++) {
     snprintf(s, 10, "%s-%ud", "weibo", i);
-    wnd = wnd_init(self.wm_mgr, self, s, 1, 1, weibo_field_height, weibo_field_width);
+    wnd = wnd_init(self->wm_mgr, self, s, 1, 1, weibo_field_height, weibo_field_width);
   }
-  self->usrdata = (void*)get_public_timeline(ACCESS_TOKEN, PAGE++);
+  self->usrdata = (void*)get_public_timeline(ACCESS_TOKEN, 0);
   wnd = self->children;
-  weibo = (PTR_WEIBO_ENTITY)(self->userdata);
+  weibo = (PTR_WEIBO_ENTITY)(self->usrdata);
   while(wnd) {
     waddstr(wnd->curses_wnd, weibo->text);
     wnd = wnd->next;
@@ -203,7 +212,7 @@ void wnd_weibo_destroyer(PTR_WND self)
 
 void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVENT event)
 {
-  static PTR_WND cursor = dst->children;
+  static PTR_WND cursor = NULL;
   static PTR_WEIBO_ENTITY weibo = NULL;
   PTR_WND wnd = dst->children;
 
@@ -246,7 +255,7 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
             }
             wnd = dst->children;
             while (wnd && weibo) {
-              waddstr(weibo->text);
+              waddstr(wnd->curses_wnd, weibo->text);
               wnd = wnd->next;
               weibo = weibo->next;
             }
@@ -282,7 +291,7 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
             }
             wnd = dst->children;
             while (wnd && weibo) {
-              waddstr(weibo->text);
+              waddstr(wnd->curses_wnd, weibo->text);
               wnd = wnd->next;
               weibo = weibo->next;
             }

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "datatype.h"
 #include "debug_util.h"
 
 const char* get_auth_code(const char* config_filename)

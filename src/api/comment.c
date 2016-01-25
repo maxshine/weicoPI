@@ -29,16 +29,17 @@ BOOL create_comment(const char *access_token, const char *weibo_id, const char *
 
   response = https_post(WEIBO_CREATE_COMMENT_URL, request);
   if (response->status_code != 200) {
-    return FALSE;
+    return False;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
     cJSON_Delete(root);
-    return FALSE;
+    return False;
   }
+  debug_log_exit(FINE, func_name);
 
-  return TRUE;
+  return True;
 
 }
 
@@ -58,16 +59,16 @@ BOOL destroy_comment(const char *access_token, const char *comment_id)
 
   response = https_post(WEIBO_DESTROY_COMMENT_URL, request);
   if (response->status_code != 200) {
-    return FALSE;
+    return False;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
     cJSON_Delete(root);
-    return FALSE;
+    return False;
   }
-
-  return TRUE;
+  debug_log_exit(FINE, func_name);
+  return True;
 
 }
 
@@ -93,16 +94,16 @@ BOOL reply_comment(const char *access_token, const char *weibo_id, const char *c
 
   response = https_post(WEIBO_REPLY_COMMENT_URL, request);
   if (response->status_code != 200) {
-    return FALSE;
+    return False;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
     cJSON_Delete(root);
-    return FALSE;
+    return False;
   }
-
-  return TRUE;
+  debug_log_exit(FINE, func_name);
+  return True;
 
 }
 
@@ -120,7 +121,7 @@ PTR_COMMENT_ENTITY show_comments(const char *access_token, const char *weibo_id,
   request->params[0].name = "access_token";
   request->params[0].value = access_token;
   request->params[1].name = "page";
-  snprintf(s, 20, "%d", cursor);
+  snprintf(s, 20, "%d", page);
   request->params[1].value = s;
   request->params[2].name = "id";
   request->params[2].value = weibo_id;

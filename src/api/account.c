@@ -23,7 +23,7 @@ uint64_t get_account_userid(const char* access_token)
 	request->params[0].value = access_token;
 	response = https_get(WEIBO_GET_ACCOUNTID_URL, request);
 	if (response->status_code != 200) {
-	  return NULL;
+	  return 0;
 	}
 
 	root = cJSON_Parse((char*)(response->body));

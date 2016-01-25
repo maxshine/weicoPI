@@ -10,7 +10,7 @@ typedef enum event_type {
   ET_DATA_REFRESH,
   ET_WINDOW_REFRESH,
   ET_INPUT_COMPLETE
-} EVENT_TYPE
+} EVENT_TYPE;
 
 typedef struct event {
   void* userdata;
@@ -18,19 +18,14 @@ typedef struct event {
   EVENT_TYPE type;
 } EVENT, *PTR_EVENT;
 
-typedef void (*EVENT_HANDLER) (PTR_WND_MANAGER, PTR_WND, PTR_WND, PTR_EVENT);
-
-typedef void (*WND_INITIALIZER) (PTR_WND);
-
-typedef void (*WND_OPS) (PTR_WND_MANAGER, PTR_WND, void*);
-
-typedef void (*WND_MANAGER_OPS) (PTR_WND_MANAGER, void*);
-
 typedef enum mywindow_type {
   WT_TEXT_FIELD,
   WT_INPUT_FIELD,
   WT_PANEL
 } WND_TYPE;
+
+struct mywindow_manager;
+
 
 typedef struct mywindow {
   char* title;
@@ -42,31 +37,31 @@ typedef struct mywindow {
   uint32_t height;
 
   WND_TYPE type;
-  PTR_WND_MANAGER wm_mgr;
+  struct mywindow_manager* wm_mgr;
   WINDOW* curses_wnd;
-  WND_INITIALIZER initializer;
-  WND_INITIALIZER destroyer;
-  EVENT_HANDLER handler;
-  WND_OPS refresh;
+  void (*initializer)(struct mywindow*);
+  void (*destroyer)(struct mywindow*);
+  void (*handler)(struct mywindow_manager*, struct mywindow*, struct mywindow*, struct event*);
+  void (*show)(struct mywindow_manager*, struct mywindow*, void*);
 
   void* usrdata;
 
   struct mywindow* parent;
   struct mywindow* children;
   struct mywindow* prev;
-  struct mywindow* next
+  struct mywindow* next;
   
 } WND, *PTR_WND;
 
 typedef struct mywindow_manager {
-  uint32_t screen_width;
-  uint32_t screen_height;
-  WND* root_wnd_list;
-  WND* focus;
-  EVENT_HANDLER handler;
-  WND_MANAGER_OPS pop;
-  WND_MANAGER_OPS push;
-  WND_MANAGER_OPS refresh;
+  uint32_t width;
+  uint32_t height;
+  PTR_WND root_wnd_list;
+  PTR_WND focus;
+  void (*handler)(struct mywindow_manager*, struct mywindow*, struct mywindow*, struct event*);
+  void (*pop)(struct mywindow_manager*, void*);
+  void (*push)(struct mywindow_manager*, void*);
+  void (*show)(struct mywindow_manager*, void*);
 } WND_MANAGER, *PTR_WND_MANAGER;
 
 #endif

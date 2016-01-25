@@ -16,7 +16,7 @@ PTR_USER_ENTITY show_user_byid(const char* access_token, const char* uid)
   debug_log_enter(FINE, func_name, "ss", access_token, uid);
 
   cJSON* root = NULL;
-  char* s[20] = "";
+  char* s[20];
   PTR_USER_ENTITY user = NULL;
   PTR_HTTP_REQUEST request = alloc_http_request(2, 0, 0, 0);
   PTR_HTTP_RESPONSE response = NULL;
@@ -50,7 +50,7 @@ PTR_USER_ENTITY show_user_byname(const char* access_token, const char* screen_na
   debug_log_enter(FINE, func_name, "ss", access_token, screen_name);
 
   cJSON* root = NULL;
-  char* s[20] = "";
+  char* s[20];
   PTR_USER_ENTITY user = NULL;
   PTR_HTTP_REQUEST request = alloc_http_request(2, 0, 0, 0);
   PTR_HTTP_RESPONSE response = NULL;
@@ -83,7 +83,7 @@ int show_user_rank(const char* access_token, const char* uid)
   debug_log_enter(FINE, func_name, "ss", access_token, uid);
 
   cJSON* root = NULL;
-  char*s[20] ="";
+  char*s[20];
   int rank = 0;
   PTR_USER_ENTITY user = NULL;
   PTR_HTTP_REQUEST request = alloc_http_request(2, 0, 0, 0);

@@ -1,4 +1,5 @@
 #include <limits.h>
+#include "datatype.h"
 
 #ifndef DEBUG_UTIL_H
 #define DEBUG_UTIL_H
