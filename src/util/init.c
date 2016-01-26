@@ -4,7 +4,7 @@
 #include "datatype.h"
 #include "debug_util.h"
 
-const char* get_auth_code(const char* config_filename)
+char* get_auth_code(const char* config_filename)
 {
 	FILE* config_file_handle = fopen(config_filename, "r");
 	char* code = (char*) malloc(50*sizeof(char));

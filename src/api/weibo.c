@@ -310,6 +310,7 @@ PTR_WEIBO_ENTITY get_public_timeline(const char* access_token, int page)
   char s[20] = {};
   int i=0, cnt = 0;
   cJSON* root = NULL;
+  cJSON* statuses = NULL;
   PTR_WEIBO_ENTITY list_head = NULL;
   PTR_WEIBO_ENTITY weibo = NULL;
   PTR_HTTP_REQUEST request = alloc_http_request(2, 0, 0, 0);
@@ -331,9 +332,11 @@ PTR_WEIBO_ENTITY get_public_timeline(const char* access_token, int page)
     return NULL;
   }
 
-  cnt = cJSON_GetArraySize(cJSON_GetObjectItem(root, "statuses"));
+  statuses = cJSON_GetObjectItem(root, "statuses");
+  cnt = cJSON_GetArraySize(statuses);
+
   for (i=0; i<cnt; i++) {
-    weibo = create_weibo_entity_from_json(cJSON_GetArrayItem(cJSON_GetObjectItem(root, "statuses"), i));
+    weibo = create_weibo_entity_from_json(cJSON_GetArrayItem(statuses, i));
     weibo->next = list_head;
     weibo->prev = NULL;
     if (list_head != NULL) {

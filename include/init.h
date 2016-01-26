@@ -1,7 +1,7 @@
 #ifndef INIT_H
 #define INIT_H
 
-const char* get_auth_code(const char* config_filename);
+char* get_auth_code(const char* config_filename);
 
 int deinit(void);
 

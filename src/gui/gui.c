@@ -106,22 +106,6 @@ void wm_refresh(PTR_WND_MANAGER wm_mgr, void* data)
   refresh();
 }
 
-PTR_WND_MANAGER wm_init(void)
-{
-  PTR_WND_MANAGER wm_mgr = (PTR_WND_MANAGER)malloc(sizeof(WND_MANAGER));
-  wm_mgr->focus = NULL;
-  wm_mgr->root_wnd_list = NULL;
-  wm_mgr->pop = wm_pop;
-  wm_mgr->push = wm_push;
-  wm_mgr->show = wm_refresh;
-  initscr();
-  getmaxyx(stdscr, wm_mgr->height, wm_mgr->width);
-  cbreak();
-  noecho();
-  keypad(stdscr, TRUE);
-  return wm_mgr;
-}
-
 void wm_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVENT event)
 {
   int key = event->key;
@@ -140,6 +124,34 @@ void wm_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVENT even
     }
 }
 
+PTR_WND_MANAGER wm_init(void)
+{
+  WINDOW* win1;
+  WINDOW* win2;
+  PTR_WND_MANAGER wm_mgr = (PTR_WND_MANAGER)malloc(sizeof(WND_MANAGER));
+  wm_mgr->focus = NULL;
+  wm_mgr->root_wnd_list = NULL;
+  wm_mgr->pop = wm_pop;
+  wm_mgr->push = wm_push;
+  wm_mgr->show = wm_refresh;
+  wm_mgr->handler = wm_handler;
+  initscr();
+  getmaxyx(stdscr, wm_mgr->height, wm_mgr->width);
+  cbreak();
+  noecho();
+  keypad(stdscr, TRUE);
+  win1 = derwin(stdscr, 20, 50, 0, 0);
+  win2 = derwin(stdscr, 20, 50, 21,0);
+  wborder(win1, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
+  wborder(win2, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
+  waddstr(win1, "This is window 1");
+  waddstr(win2, "This is window 2");
+  wrefresh(win1);
+  wrefresh(win2);
+  return wm_mgr;
+}
+
+
 PTR_WND wnd_init(PTR_WND_MANAGER wm_mgr, PTR_WND parent, const char* title, uint32_t y, uint32_t x, uint32_t height, uint32_t width)
 {
   PTR_WND wnd = (PTR_WND) malloc(sizeof(WND));
@@ -148,8 +160,13 @@ PTR_WND wnd_init(PTR_WND_MANAGER wm_mgr, PTR_WND parent, const char* title, uint
   wnd->title = strdup(title);
   wnd->x = x;
   wnd->y = y;
-  wnd->abs_y = (parent->abs_y + y) % wm_mgr->height;
-  wnd->abs_x = (parent->abs_x + x) % wm_mgr->width;
+  if (parent != NULL) {
+    wnd->abs_y = (parent->abs_y + y) % wm_mgr->height;
+    wnd->abs_x = (parent->abs_x + x) % wm_mgr->width;
+  } else {
+    wnd->abs_y = y;
+    wnd->abs_x = x;
+  }
   wnd->height = height;
   wnd->width = width;
   wnd->parent = parent;
@@ -188,11 +205,13 @@ void wnd_weibo_initializer(PTR_WND self)
     snprintf(s, 10, "%s-%ud", "weibo", i);
     wnd = wnd_init(self->wm_mgr, self, s, 1, 1, weibo_field_height, weibo_field_width);
   }
-  self->usrdata = (void*)get_public_timeline(ACCESS_TOKEN, 0);
+  self->usrdata = (void*)get_public_timeline(ACCESS_TOKEN, 1);
   wnd = self->children;
   weibo = (PTR_WEIBO_ENTITY)(self->usrdata);
   while(wnd) {
+    wborder(wnd->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
     waddstr(wnd->curses_wnd, weibo->text);
+    wrefresh(wnd->curses_wnd);
     wnd = wnd->next;
     weibo = weibo->next;
   }
@@ -269,13 +288,13 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
             switch(WEIBO_TYPE)
               {
               case 0:
-                dst->usrdata = (void*)get_public_timeline(ACCESS_TOKEN, PAGE==0?0:(--PAGE));
+                dst->usrdata = (void*)get_public_timeline(ACCESS_TOKEN, PAGE==1?1:(--PAGE));
                 break;
               case 1:
-                dst->usrdata = (void*)get_user_timeline_byid(ACCESS_TOKEN, USERID, PAGE==0?0:(--PAGE));
+                dst->usrdata = (void*)get_user_timeline_byid(ACCESS_TOKEN, USERID, PAGE==1?1:(--PAGE));
                 break;
               case 2:
-                dst->usrdata = (void*)get_friend_timeline(ACCESS_TOKEN, PAGE==0?0:(--PAGE));
+                dst->usrdata = (void*)get_friend_timeline(ACCESS_TOKEN, PAGE==1?1:(--PAGE));
                 break;
               }
             weibo = (PTR_WEIBO_ENTITY)(dst->usrdata);

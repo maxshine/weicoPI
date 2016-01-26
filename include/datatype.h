@@ -13,21 +13,21 @@ typedef enum http_form_type {
 } ENUM_HTTP_FORM_TYPE;
 
 typedef struct http_header {
-  char *name;
-  char *value;
+  const char *name;
+  const char *value;
   struct http_header* next;
 } HTTP_HEADER, *PTR_HTTP_HEADER;
 
 typedef struct http_form {
-  char *name;
-  char *value;
+  const char *name;
+  const char *value;
   ENUM_HTTP_FORM_TYPE type;
   struct http_form* next;
 } HTTP_FORM, *PTR_HTTP_FORM;
 
 typedef struct http_param {
-  char *name;
-  char *value;
+  const char *name;
+  const char *value;
   struct http_form* next;
 } HTTP_PARAM, *PTR_HTTP_PARAM;
 

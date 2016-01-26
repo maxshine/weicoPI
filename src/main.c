@@ -17,8 +17,8 @@ char* ACCESS_TOKEN = NULL;
 char* USERID = NULL;
 char* ACCOUNTID = NULL;
 char* FRIENDID = NULL;
-char* AUTH_FILENAME = "/home/pi/weicoPi/config/authorization_code";
-uint32_t PAGE = 0;
+const char* AUTH_FILENAME = "/home/pi/weicoPi/config/authorization_code";
+uint32_t PAGE = 1;
 uint32_t WEIBO_TYPE = 0; /* 0 --  public timeline; 1 -- user; 2 -- friend timeline*/
 
 void main(int argc, char *argv[])
@@ -42,7 +42,7 @@ void main(int argc, char *argv[])
   weibo_wnd->initializer = wnd_weibo_initializer;
   weibo_wnd->destroyer = wnd_weibo_destroyer;
   weibo_wnd->initializer(weibo_wnd);
-  refresh();
+  /*  refresh();*/
   wm_runloop(wm_mgr);
   deinit_debug_log();
   free((void*)ACCESS_TOKEN);

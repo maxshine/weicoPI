@@ -186,7 +186,7 @@ PTR_HTTP_RESPONSE http_get(char* url, PTR_HTTP_REQUEST request)
   CURL* curl_handler = NULL;
   CURLcode curl_perform_ret;
   struct curl_slist* slist = NULL;
-  PTR_HTTP_RESPONSE response = alloc_http_response(0, 1024);
+  PTR_HTTP_RESPONSE response = alloc_http_response(0, 0);
 
   curl_handler = curl_easy_init();
   curl_easy_setopt(curl_handler, CURLOPT_HTTPGET, 1L);
@@ -233,7 +233,7 @@ PTR_HTTP_RESPONSE http_post(char* url, PTR_HTTP_REQUEST request)
   struct curl_slist* slist = NULL;
   struct curl_httppost* post = NULL;
   struct curl_httppost* last = NULL;
-  PTR_HTTP_RESPONSE response = alloc_http_response(0, 1024);
+  PTR_HTTP_RESPONSE response = alloc_http_response(0, 0);
 
   curl_handler = curl_easy_init();
   curl_easy_setopt(curl_handler, CURLOPT_URL, url);
@@ -290,7 +290,7 @@ PTR_HTTP_RESPONSE https_get(char* url, PTR_HTTP_REQUEST request)
   CURL* curl_handler = NULL;
   CURLcode curl_perform_ret;
   struct curl_slist* slist = NULL;
-  PTR_HTTP_RESPONSE response = alloc_http_response(0, 1024);
+  PTR_HTTP_RESPONSE response = alloc_http_response(0, 0);
 
   curl_handler = curl_easy_init();
   curl_easy_setopt(curl_handler, CURLOPT_HTTPGET, 1L);
@@ -338,7 +338,7 @@ PTR_HTTP_RESPONSE https_post(char* url, PTR_HTTP_REQUEST request)
   struct curl_slist* slist = NULL;
   struct curl_httppost* post = NULL;
   struct curl_httppost* last = NULL;
-  PTR_HTTP_RESPONSE response = alloc_http_response(0, 1024);
+  PTR_HTTP_RESPONSE response = alloc_http_response(0, 0);
 
   curl_handler = curl_easy_init();
   curl_easy_setopt(curl_handler, CURLOPT_URL, url);

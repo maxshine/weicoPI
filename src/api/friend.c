@@ -9,6 +9,7 @@
 #include "http_action.h"
 #include "constants.h"
 #include "debug_util.h"
+#include "weibo_util.h"
 
 
 PTR_USER_ENTITY get_friends_byid(const char* access_token, const char* uid, int cursor)

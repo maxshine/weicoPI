@@ -9,6 +9,7 @@
 #include "http_action.h"
 #include "constants.h"
 #include "debug_util.h"
+#include "weibo_util.h"
 
 BOOL create_comment(const char *access_token, const char *weibo_id, const char *comment)
 {

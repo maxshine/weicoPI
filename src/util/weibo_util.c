@@ -420,29 +420,29 @@ PTR_WEIBO_ENTITY create_weibo_entity_from_json(cJSON* json_object)
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "idstr");
 		json_length = strlen(ptr_json->valuestring);
-		ptr_weibo_entity->created_at = (char*) malloc((1+json_length)*sizeof(char));
-		strcpy(ptr_weibo_entity->created_at, ptr_json->valuestring);
+		ptr_weibo_entity->idstr = (char*) malloc((1+json_length)*sizeof(char));
+		strcpy(ptr_weibo_entity->idstr, ptr_json->valuestring);
 	}
 	if(cJSON_GetObjectItem(json_object, "mid") != NULL)		
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "mid");
 		json_length = strlen(ptr_json->valuestring);
-		ptr_weibo_entity->created_at = (char*) malloc((1+json_length)*sizeof(char));
-		strcpy(ptr_weibo_entity->created_at, ptr_json->valuestring);
+		ptr_weibo_entity->mid = (char*) malloc((1+json_length)*sizeof(char));
+		strcpy(ptr_weibo_entity->mid, ptr_json->valuestring);
 	}
 	if(cJSON_GetObjectItem(json_object, "text") != NULL)		
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "text");
 		json_length = strlen(ptr_json->valuestring);
-		ptr_weibo_entity->created_at = (char*) malloc((1+json_length)*sizeof(char));
-		strcpy(ptr_weibo_entity->created_at, ptr_json->valuestring);
+		ptr_weibo_entity->text = (char*) malloc((1+json_length)*sizeof(char));
+		strcpy(ptr_weibo_entity->text, ptr_json->valuestring);
 	}
 	if(cJSON_GetObjectItem(json_object, "source") != NULL)		
 	{
 		ptr_json = cJSON_GetObjectItem(json_object, "source");
 		json_length = strlen(ptr_json->valuestring);
-		ptr_weibo_entity->created_at = (char*) malloc((1+json_length)*sizeof(char));
-		strcpy(ptr_weibo_entity->created_at, ptr_json->valuestring);
+		ptr_weibo_entity->source = (char*) malloc((1+json_length)*sizeof(char));
+		strcpy(ptr_weibo_entity->source, ptr_json->valuestring);
 	}
 	if(cJSON_GetObjectItem(json_object, "retweeted_status") != NULL)		
 	{
@@ -511,7 +511,7 @@ PTR_COMMENT_ENTITY create_comment_entity_from_json(cJSON* json_object)
   }
   if(cJSON_GetObjectItem(json_object, "source") != NULL) {
     ptr_json = cJSON_GetObjectItem(json_object, "source");
-    ptr_comment_entity->text = strdup(ptr_json->valuestring);
+    ptr_comment_entity->source = strdup(ptr_json->valuestring);
   }
   if(cJSON_GetObjectItem(json_object, "id") != NULL) {
     ptr_json = cJSON_GetObjectItem(json_object, "id");
@@ -520,7 +520,7 @@ PTR_COMMENT_ENTITY create_comment_entity_from_json(cJSON* json_object)
   if(cJSON_GetObjectItem(json_object, "user") != NULL && cJSON_GetObjectItem(json_object, "user")->type != cJSON_NULL) {
       ptr_json = cJSON_GetObjectItem(json_object, "user");
       ptr_comment_entity->user = create_user_entity_from_json(ptr_json);
-  }
+      }
   if(cJSON_GetObjectItem(json_object, "status") != NULL && cJSON_GetObjectItem(json_object, "status")->type != cJSON_NULL) {
       ptr_json = cJSON_GetObjectItem(json_object, "status");
       ptr_comment_entity->status = create_weibo_entity_from_json(ptr_json);
@@ -617,8 +617,8 @@ PTR_GEO_ENTITY create_geo_entity_from_json(cJSON* json_object)
 
 
 /* 
-   FALSE -> No error
-   TRUE -> error happends, it's printed in log
+   False -> No error
+   True -> error happends, it's printed in log
 */
 BOOL check_api_error(cJSON* json)
 {
@@ -628,10 +628,11 @@ BOOL check_api_error(cJSON* json)
   char* request;
   cJSON* error_msg = NULL;
   char msg[255];
-  if ((error_msg = cJSON_GetObjectItem(json, "error"))->type != cJSON_NULL) {
-    error_code = cJSON_GetObjectItem(json, "error_code");
-    request = cJSON_GetObjectItem(json, "request");
-    snprintf(msg, 255, "Error for API: %s, Code=%d, Error Details=%s", request, error_code, error_msg);
+  error_msg = cJSON_GetObjectItem(json, "error");
+  if (error_msg != NULL && error_msg->type != cJSON_NULL) {
+    error_code = cJSON_GetObjectItem(json, "error_code")->valueint;
+    request = cJSON_GetObjectItem(json, "request")->valuestring;
+    snprintf(msg, 255, "Error for API: %s, Code=%d, Error Details=%s", request, error_code, error_msg->valuestring);
     debug_log(WARN, func_name, msg);
     return True;
   }

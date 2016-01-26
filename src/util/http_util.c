@@ -72,16 +72,16 @@ size_t parse_header( void *ptr, size_t size, size_t nmemb, void  *userdata)
     response->headers = (PTR_HTTP_HEADER) malloc(1*sizeof(HTTP_HEADER));
     response->headers[0].name = (char*) malloc(30*sizeof(char));
     response->headers[0].value = (char*) malloc(size*nmemb*sizeof(char)+1);
-    memset(response->headers[0].name, '\0', 15*sizeof(char));
-    memset(response->headers[0].value, '\0', size*nmemb*sizeof(char)+1);
+    memset((void*)(response->headers[0].name), '\0', 15*sizeof(char));
+    memset((void*)(response->headers[0].value), '\0', size*nmemb*sizeof(char)+1);
     response->headers_qty = 1;
   } else {
     response->headers = (PTR_HTTP_HEADER) realloc(response->headers, sizeof(HTTP_HEADER)*(response->headers_qty+1));
     response->headers_qty += 1;
     response->headers[response->headers_qty-1].name =(char*) malloc(30*sizeof(char));
     response->headers[response->headers_qty-1].value = (char*) malloc(size*nmemb*sizeof(char)+1);
-    memset(response->headers[response->headers_qty-1].name, '\0', 30*sizeof(char));
-    memset(response->headers[response->headers_qty-1].value, '\0', size*nmemb*sizeof(char)+1);
+    memset((void*)(response->headers[response->headers_qty-1].name), '\0', 30*sizeof(char));
+    memset((void*)(response->headers[response->headers_qty-1].value), '\0', size*nmemb*sizeof(char)+1);
   }
   strncpy(response->headers[response->headers_qty-1].name, trim(p), 30);
   strncpy(response->headers[response->headers_qty-1].value, trim(i+1), size*nmemb);
@@ -96,15 +96,16 @@ size_t write_body(char *ptr, size_t size, size_t nmemb, void *userdata)
   debug_log(FINEST, func_name, ptr);
   PTR_HTTP_RESPONSE response = userdata;
   if (response->body == NULL) {
-    response->body = (void*) malloc(size*nmemb+1);
-    memset(response->body, '\0', size*nmemb+1);
-    response->body_length = (uint32_t) size*nmemb+1;
-  } else {
+    response->body = (void*) malloc(size*nmemb);
+    memset(response->body, '\0', size*nmemb);
+    response->body_length = (uint32_t) size*nmemb;
+    memcpy(response->body, ptr, size*nmemb);
+  }else {
     response->body = (void*) realloc(response->body, size*nmemb*+response->body_length);
     memset(response->body+response->body_length, '\0', size*nmemb);
+    memcpy(response->body+response->body_length, ptr, size*nmemb);
     response->body_length += size*nmemb;
   }
-  memcpy(response->body, ptr, size*nmemb);
   debug_log_exit(FINE, func_name);
   return size*nmemb;
 }
