@@ -140,19 +140,11 @@ PTR_WND_MANAGER wm_init(void)
   cbreak();
   noecho();
   keypad(stdscr, TRUE);
-  win1 = derwin(stdscr, 20, 50, 0, 0);
-  win2 = derwin(stdscr, 20, 50, 21,0);
-  wborder(win1, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
-  wborder(win2, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
-  waddstr(win1, "This is window 1");
-  waddstr(win2, "This is window 2");
-  wrefresh(win1);
-  wrefresh(win2);
   return wm_mgr;
 }
 
 
-PTR_WND wnd_init(PTR_WND_MANAGER wm_mgr, PTR_WND parent, const char* title, uint32_t y, uint32_t x, uint32_t height, uint32_t width)
+PTR_WND wnd_init(PTR_WND_MANAGER wm_mgr, PTR_WND parent, const char* title, uint32_t height, uint32_t width, uint32_t y, uint32_t x)
 {
   PTR_WND wnd = (PTR_WND) malloc(sizeof(WND));
   PTR_WND current = NULL;
@@ -183,7 +175,7 @@ PTR_WND wnd_init(PTR_WND_MANAGER wm_mgr, PTR_WND parent, const char* title, uint
     }
     wnd->prev = current;
     wnd->next = NULL;
-    wnd->curses_wnd = derwin(parent->curses_wnd, (int)(wnd->height), (int)(wnd->width), wnd->height+1, 1);
+    wnd->curses_wnd = derwin(parent->curses_wnd, (int)(wnd->height), (int)(wnd->width), y, x);
   } else {
     wnd->curses_wnd = newwin((int)height, (int)width, wnd->abs_y, wnd->abs_x);
     wm_mgr->push(wm_mgr, wnd);
@@ -199,18 +191,20 @@ void wnd_weibo_initializer(PTR_WND self)
   uint32_t i = 0;
   uint32_t weibo_field_cnt = 5;
   uint32_t weibo_field_width = self->width-2;
-  uint32_t weibo_field_height = ((WEIBO_CONTENT_LIMIT) / weibo_field_width) + 2;
+  uint32_t weibo_field_height = ((WEIBO_CONTENT_LIMIT) / weibo_field_width) + 4;
   self->type = WT_PANEL;
   for (i=0; i<weibo_field_cnt; i++) {
     snprintf(s, 10, "%s-%ud", "weibo", i);
-    wnd = wnd_init(self->wm_mgr, self, s, 1, 1, weibo_field_height, weibo_field_width);
+    wnd = wnd_init(self->wm_mgr, self, s, weibo_field_height, weibo_field_width, i*weibo_field_height+1, 1);
   }
   self->usrdata = (void*)get_public_timeline(ACCESS_TOKEN, 1);
   wnd = self->children;
   weibo = (PTR_WEIBO_ENTITY)(self->usrdata);
+  wborder(self->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
+  wrefresh(self->curses_wnd);
   while(wnd) {
     wborder(wnd->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
-    waddstr(wnd->curses_wnd, weibo->text);
+    mvwaddstr(wnd->curses_wnd, 1, 1, weibo->text);
     wrefresh(wnd->curses_wnd);
     wnd = wnd->next;
     weibo = weibo->next;
