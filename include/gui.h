@@ -18,4 +18,8 @@ void wnd_weibo_destroyer(PTR_WND self);
 void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVENT event);
 void wnd_weibo_refresh(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data);
 
+void wnd_alert(PTR_WND_MANAGER wm_mgr, char* text);
+void wnd_alert_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVENT event);
+void wnd_alert_refresh(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data)
+
 #endif

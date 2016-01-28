@@ -112,12 +112,11 @@ void wm_refresh(PTR_WND_MANAGER wm_mgr, void* data)
 {
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, NULL);
-  clear();
   PTR_WND wnd = wm_mgr->root_wnd_list;
   while (wnd != NULL) {
-    wborder(wnd->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
-    wnd->show(wm_mgr, wnd, NULL);
-    wrefresh(wnd->curses_wnd);
+    if (wnd->show) {
+      wnd->show(wm_mgr, wnd, NULL);
+    }
     wnd = wnd->next;
   }
   debug_log_exit(FINE, func_name);
@@ -251,6 +250,54 @@ void wnd_weibo_field_fillup(PTR_WND self, uint32_t y, uint32_t x, char c)
     }
   }
   debug_log_exit(FINE, func_name);
+}
+
+void wnd_alert_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVENT event)
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, NULL);
+  PTR_WND wnd = wm_mgr->root_wnd_list;
+
+  switch(event->type)
+    {
+    case ET_KEY_PRESSED:
+      switch(event->key)
+        {
+        case KEY_ENTER:
+	case 0012:
+	  werase(dst->curses_wnd);
+	  wrefresh(dst->curses_wnd);
+	  wm_mgr->pop(wm_mgr, dst);
+          break;
+	default:
+	  break;
+	}
+      break;
+    default:
+      break;
+    }
+  debug_log_exit(FINE, func_name);
+}
+
+void wnd_alert_refresh(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data)
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, NULL);
+  touchwin(self->curses_wnd);
+  wrefresh(self->curses_wnd);
+  debug_log_exit(FINE, func_name);
+}
+
+void wnd_alert(PTR_WND_MANAGER wm_mgr, char* text)
+{
+  uint32_t l = (uint32_t) strlen(text);
+  l += 5;
+  PTR_WND wnd = wnd_init(wm_mgr, NULL, "alert", 4, l>50?50:l, (wm_mgr->height-4)/2, (wm_mgr->width-50)/2);
+  wnd->handler = wnd_alert_handler;
+  wnd->show = wnd_alert_refresh;
+  wborder(wnd->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
+  wnd_weibo_field_addstr(wnd, 1, 2, text, l);
+  wrefresh(wnd->curses_wnd);
 }
 
 
@@ -425,12 +472,14 @@ void wnd_weibo_refresh(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data)
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, NULL);
   PTR_WND wnd = self->children;
+  touchwin(self->curses_wnd);
+  wrefresh(self->curses_wnd);
   while(wnd) {
+    touchwin(wnd->curses_wnd);
     wrefresh(wnd->curses_wnd);
     wnd = wnd->next;
   }
   debug_log_exit(FINE, func_name);
-
 }
 
 void wnd_popinput(PTR_WND_MANAGER wm_mgr, PTR_WND parent)
@@ -443,7 +492,3 @@ void wnd_popinput_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_
 
 }
 
-void wnd_alert(PTR_WND_MANAGER wm_mgr, PTR_WND parent, const char* text, uint32_t sec)
-{
-
-}
