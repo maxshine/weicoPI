@@ -107,44 +107,44 @@ PTR_GEO_ENTITY init_geo_entity()
 
 void destroy_user_entity(PTR_USER_ENTITY ptr_user_entity)
 {
-	debug_log_enter(FINE, __func__, "p", ptr_user_entity);
-	if(ptr_user_entity->idstr != NULL)
-	{
-		free(ptr_user_entity->idstr);
-		ptr_user_entity->idstr = NULL;
-	}
-	if(ptr_user_entity->screen_name != NULL)
-	{
-		free(ptr_user_entity->screen_name);
-		ptr_user_entity->screen_name = NULL;
-	}
-	if(ptr_user_entity->name != NULL)
-	{
-		free(ptr_user_entity->name);
-		ptr_user_entity->name = NULL;
-	}
-	if(ptr_user_entity->description != NULL)
-	{
-		free(ptr_user_entity->description);
-		ptr_user_entity->description = NULL;
-	}
-	if(ptr_user_entity->location != NULL)
-	{
-		free(ptr_user_entity->location);
-		ptr_user_entity->location = NULL;
-	}
-	if(ptr_user_entity->gender != NULL)
-	{
-		free(ptr_user_entity->gender);
-		ptr_user_entity->gender = NULL;
-	}
-	if(ptr_user_entity->profile_url != NULL)
-	{
-		free(ptr_user_entity->profile_url);
-		ptr_user_entity->profile_url = NULL;
-	}
-	free(ptr_user_entity);
-	debug_log_exit(FINE, __func__);
+  debug_log_enter(FINE, __func__, "p", ptr_user_entity);
+  if(ptr_user_entity->idstr != NULL)
+    {
+      free(ptr_user_entity->idstr);
+      ptr_user_entity->idstr = NULL;
+    }
+  if(ptr_user_entity->screen_name != NULL)
+    {
+      free(ptr_user_entity->screen_name);
+      ptr_user_entity->screen_name = NULL;
+    }
+  if(ptr_user_entity->name != NULL)
+    {
+      free(ptr_user_entity->name);
+      ptr_user_entity->name = NULL;
+    }
+  if(ptr_user_entity->description != NULL)
+    {
+      free(ptr_user_entity->description);
+      ptr_user_entity->description = NULL;
+    }
+  if(ptr_user_entity->location != NULL)
+    {
+      free(ptr_user_entity->location);
+      ptr_user_entity->location = NULL;
+    }
+  if(ptr_user_entity->gender != NULL)
+    {
+      free(ptr_user_entity->gender);
+      ptr_user_entity->gender = NULL;
+    }
+  if(ptr_user_entity->profile_url != NULL)
+    {
+      free(ptr_user_entity->profile_url);
+      ptr_user_entity->profile_url = NULL;
+    }
+  free(ptr_user_entity);
+  debug_log_exit(FINE, __func__);
 }
 
 
@@ -237,48 +237,68 @@ void destroy_geo_entity(PTR_GEO_ENTITY ptr_geo_entity)
 
 void destroy_weibo_entity(PTR_WEIBO_ENTITY ptr_weibo_entity)
 {
-        const char *func_name = __func__;
-	debug_log_enter(FINE, func_name, "p", ptr_weibo_entity);
+  const char *func_name = __func__;
+  debug_log_enter(FINE, func_name, "p", ptr_weibo_entity);
+  
+  int i = 0;
+  
+  if(ptr_weibo_entity->created_at != NULL)
+    {
+      free(ptr_weibo_entity->created_at);
+      ptr_weibo_entity->created_at = NULL;
+    }
+  if(ptr_weibo_entity->idstr != NULL)
+    {
+      free(ptr_weibo_entity->idstr);
+      ptr_weibo_entity->idstr = NULL;
+    }
+  if(ptr_weibo_entity->mid != NULL)
+    {
+      free(ptr_weibo_entity->mid);
+      ptr_weibo_entity->mid = NULL;
+    }
+  if(ptr_weibo_entity->text != NULL)
+    {
+      free(ptr_weibo_entity->text);
+      ptr_weibo_entity->text = NULL;
+    }
+  if(ptr_weibo_entity->source != NULL)
+    {
+      free(ptr_weibo_entity->source);
+      ptr_weibo_entity->source = NULL;
+    }
+  if(ptr_weibo_entity->user != NULL)
+    {
+      destroy_user_entity(ptr_weibo_entity->user);
+      ptr_weibo_entity->user = NULL;
+    }
+  if(ptr_weibo_entity->retweeted_status != NULL)
+    {
+      destroy_weibo_entity(ptr_weibo_entity->retweeted_status);
+      ptr_weibo_entity->retweeted_status = NULL;
+    }
+  free(ptr_weibo_entity);	
+  debug_log_exit(FINE, func_name);
+}
 
-	int i = 0;
+void destroy_weibo_entity_list(PTR_WEIBO_ENTITY ptr_weibo_entity)
+{
+  PTR_WEIBO_ENTITY weibo = ptr_weibo_entity;
+  while(weibo) {
+    destroy_weibo_entity(weibo);
+    ptr_weibo_entity = ptr_weibo_entity->next;
+    weibo = ptr_weibo_entity;
+  }
+}
 
-	if(ptr_weibo_entity->created_at != NULL)
-	{
-		free(ptr_weibo_entity->created_at);
-		ptr_weibo_entity->created_at = NULL;
-	}
-	if(ptr_weibo_entity->idstr != NULL)
-	{
-		free(ptr_weibo_entity->idstr);
-		ptr_weibo_entity->idstr = NULL;
-	}
-	if(ptr_weibo_entity->mid != NULL)
-	{
-		free(ptr_weibo_entity->mid);
-		ptr_weibo_entity->mid = NULL;
-	}
-	if(ptr_weibo_entity->text != NULL)
-	{
-		free(ptr_weibo_entity->text);
-		ptr_weibo_entity->text = NULL;
-	}
-	if(ptr_weibo_entity->source != NULL)
-	{
-		free(ptr_weibo_entity->source);
-		ptr_weibo_entity->source = NULL;
-	}
-	if(ptr_weibo_entity->user != NULL)
-	{
-		destroy_user_entity(ptr_weibo_entity->user);
-		ptr_weibo_entity->user = NULL;
-	}
-	if(ptr_weibo_entity->retweeted_status != NULL)
-	{
-		destroy_weibo_entity(ptr_weibo_entity->retweeted_status);
-		ptr_weibo_entity->retweeted_status = NULL;
-	}
-	free(ptr_weibo_entity);	
-	debug_log_exit(FINE, func_name);
+void destroy_comment_entity_list(PTR_COMMENT_ENTITY ptr_comment_entity)
+{
+  PTR_COMMENT_ENTITY comment = ptr_comment_entity;
+  while(comment) {
+    destroy_comment_entity(comment);
+    ptr_comment_entity = ptr_comment_entity->next;
+    comment = ptr_comment_entity;
+  }
 }
 
 PTR_USER_ENTITY create_user_entity_from_json(cJSON* json_object)

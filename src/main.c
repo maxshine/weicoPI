@@ -18,7 +18,7 @@ char* USERID = NULL;
 char* ACCOUNTID = NULL;
 char* FRIENDID = NULL;
 const char* AUTH_FILENAME = "/home/pi/weicoPi/config/authorization_code";
-uint32_t PAGE = 1;
+uint32_t PAGE = 1;       /* start with page #1 */
 uint32_t WEIBO_TYPE = 0; /* 0 --  public timeline; 1 -- user; 2 -- friend timeline*/
 
 void main(int argc, char *argv[])

@@ -44,7 +44,7 @@ void debug_log(LogLevel level, const char* function_name, const char* msg)
 	memset(message, 0, (30+strlen(msg)+100)*sizeof(char));
 	time(t);
 	strftime(timestamp, 30, "[%F %T Z%z]", localtime(t));
-	sprintf(message, "%s %#x %#x %s %s\n", timestamp, pid, tid, function_name, msg);
+	sprintf(message, "%s %#x %#x %s %d %s\n", timestamp, pid, tid, function_name, level, msg);
 	do_debug_log(level, message);
 	free(t);
 	free(message);
