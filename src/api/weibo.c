@@ -16,15 +16,18 @@ BOOL create_weibo_text(const char* access_token, const char* text)
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, "ss", access_token, text);
   cJSON* root = NULL;
-  PTR_HTTP_REQUEST request = alloc_http_request(0, 0, 2, 0);
+  PTR_HTTP_REQUEST request = alloc_http_request(0, 0, 0, (50+strlen(text))*sizeof(char));
   PTR_HTTP_RESPONSE response = NULL;
+  /*
   request->form[0].name = "access_token";
   request->form[0].value = access_token;
   request->form[0].type = STRING;
   request->form[1].name = "status";
   request->form[1].value = text;
   request->form[1].type = STRING;
-
+  */
+  sprintf((char*)(request->body), "access_token=%s&status=%s", access_token, text);
+  request->body_length = strlen((char*)(request->body));
   response = https_post(WEIBO_CREATE_URL, request);
   if (response->status_code != 200) {
     return False;
@@ -44,15 +47,18 @@ BOOL destroy_weibo(const char* access_token, const char* weibo_id)
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, "ss", access_token, weibo_id);
   cJSON* root = NULL;
-  PTR_HTTP_REQUEST request = alloc_http_request(0, 0, 2, 0);
+  PTR_HTTP_REQUEST request = alloc_http_request(0, 0, 0, 100);
   PTR_HTTP_RESPONSE response = NULL;
+  /*
   request->form[0].name = "access_token";
   request->form[0].value = access_token;
   request->form[0].type = STRING;
   request->form[1].name = "id";
   request->form[1].value = weibo_id;
   request->form[1].type = STRING;
-
+  */
+  sprintf((char*)(request->body), "access_token=%s&id=%s", access_token, weibo_id);
+  request->body_length = strlen((char*)(request->body));
   response = https_post(WEIBO_CREATE_URL, request);
   if (response->status_code != 200) {
     return False;
@@ -72,8 +78,9 @@ BOOL repost_weibo(const char* access_token, const char* text, const char* weibo_
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, "sss", access_token, text, weibo_id);
   cJSON* root = NULL;
-  PTR_HTTP_REQUEST request = alloc_http_request(0, 0, 3, 0);
+  PTR_HTTP_REQUEST request = alloc_http_request(0, 0, 0, (100+strlen(text))*sizeof(char));
   PTR_HTTP_RESPONSE response = NULL;
+  /*
   request->form[0].name = "access_token";
   request->form[0].value = access_token;
   request->form[0].type = STRING;
@@ -83,7 +90,9 @@ BOOL repost_weibo(const char* access_token, const char* text, const char* weibo_
   request->form[2].name = "id";
   request->form[2].value = weibo_id;
   request->form[2].type = STRING;
-
+  */
+  sprintf((char*)(request->body), "access_token=%s&id=%s&status=%s", access_token, weibo_id, text);
+  request->body_length = strlen((char*)(request->body));
   response = https_post(WEIBO_REPOST_URL, request);
   if (response->status_code != 200) {
     return False;

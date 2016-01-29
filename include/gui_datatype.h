@@ -13,7 +13,7 @@ typedef enum event_type {
 } EVENT_TYPE;
 
 typedef struct event {
-  void* userdata;
+  void* usrdata;
   int key;
   EVENT_TYPE type;
 } EVENT, *PTR_EVENT;

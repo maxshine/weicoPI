@@ -110,7 +110,7 @@ PTR_HTTP_REQUEST alloc_http_request(uint32_t params_qty, uint32_t headers_qty, u
       return NULL;
     }
     if (body_length > 0) {
-      request->body = (void*) malloc(sizeof(body_length));
+      request->body = (void*) malloc(body_length);
     } else {
       request->body = NULL;
       request->body_length = 0;

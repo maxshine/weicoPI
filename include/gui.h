@@ -20,6 +20,8 @@ void wnd_weibo_refresh(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data);
 
 void wnd_alert(PTR_WND_MANAGER wm_mgr, char* text);
 void wnd_alert_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVENT event);
-void wnd_alert_refresh(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data)
+void wnd_alert_refresh(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data);
+
+char* wnd_popinput(PTR_WND_MANAGER wm_mgr, PTR_WND parent, uint32_t height, uint32_t width);
 
 #endif

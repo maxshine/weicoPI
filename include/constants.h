@@ -16,7 +16,7 @@
 #define INIT_AUTHORIZE_URL "https://api.weibo.com/oauth2/authorize"
 #define WEIBO_CREATE_URL "https://api.weibo.com/2/statuses/update.json"
 #define WEIBO_CREATE_UPLOAD_URL "https://upload.api.weibo.com/2/statuses/upload.json"
-#define WEIBO_REPOST_URL "https://api.weibo.com/2/statuses/repost.jason"
+#define WEIBO_REPOST_URL "https://api.weibo.com/2/statuses/repost.json"
 #define WEIBO_DESTROY_URL "https://api.weibo.com/2/statuses/destroy.json"
 
 #define WEIBO_GET_USER_TIMELINE_URL "https://api.weibo.com/2/statuses/user_timeline.json"

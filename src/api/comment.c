@@ -16,8 +16,9 @@ BOOL create_comment(const char *access_token, const char *weibo_id, const char *
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, "sss", access_token, weibo_id, comment);
   cJSON* root = NULL;
-  PTR_HTTP_REQUEST request = alloc_http_request(0, 0, 3, 0);
+  PTR_HTTP_REQUEST request = alloc_http_request(0, 0, 0, (100+strlen(comment))*sizeof(char));
   PTR_HTTP_RESPONSE response = NULL;
+  /*
   request->form[0].name = "access_token";
   request->form[0].value = access_token;
   request->form[0].type = STRING;
@@ -27,7 +28,8 @@ BOOL create_comment(const char *access_token, const char *weibo_id, const char *
   request->form[2].name = "id";
   request->form[2].value = weibo_id;
   request->form[2].type = STRING;
-
+  */
+  sprintf((char*)(request->body), "access_token=%s&id=%s&comment=%s", access_token, weibo_id, comment);
   response = https_post(WEIBO_CREATE_COMMENT_URL, request);
   if (response->status_code != 200) {
     return False;
@@ -49,15 +51,17 @@ BOOL destroy_comment(const char *access_token, const char *comment_id)
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, "ss", access_token, comment_id);
   cJSON* root = NULL;
-  PTR_HTTP_REQUEST request = alloc_http_request(0, 0, 2, 0);
+  PTR_HTTP_REQUEST request = alloc_http_request(0, 0, 0, 100);
   PTR_HTTP_RESPONSE response = NULL;
+  /*
   request->form[0].name = "access_token";
   request->form[0].value = access_token;
   request->form[0].type = STRING;
   request->form[1].name = "cid";
   request->form[1].value = comment_id;
   request->form[1].type = STRING;
-
+  */
+  sprintf((char*)(request->body), "access_token=%s&comment_id=%s", access_token, comment_id);
   response = https_post(WEIBO_DESTROY_COMMENT_URL, request);
   if (response->status_code != 200) {
     return False;
@@ -78,8 +82,9 @@ BOOL reply_comment(const char *access_token, const char *weibo_id, const char *c
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, "ssss", access_token, weibo_id, comment_id, comment);
   cJSON* root = NULL;
-  PTR_HTTP_REQUEST request = alloc_http_request(0, 0, 4, 0);
+  PTR_HTTP_REQUEST request = alloc_http_request(0, 0, 0, (100+strlen(comment)*sizeof(char)));
   PTR_HTTP_RESPONSE response = NULL;
+  /*
   request->form[0].name = "access_token";
   request->form[0].value = access_token;
   request->form[0].type = STRING;
@@ -92,7 +97,8 @@ BOOL reply_comment(const char *access_token, const char *weibo_id, const char *c
   request->form[3].name = "cid";
   request->form[3].value = comment_id;
   request->form[3].type = STRING;
-
+  */
+  sprintf((char*)(request->body), "access_token=%s&id=%s&cid=&comment=%s", access_token, weibo_id, comment_id, comment);
   response = https_post(WEIBO_REPLY_COMMENT_URL, request);
   if (response->status_code != 200) {
     return False;
