@@ -1,8 +1,8 @@
 MAINPATH := $(shell pwd)
 OUTPATH := $(MAINPATH)/build
 
-CFLAGS := -I $(MAINPATH)/include -c
-LDFLAGS := -lcurl -lm -lcurses
+CFLAGS := -I $(MAINPATH)/include -c -std=c99 $(shell ncursesw5-config --cflags)
+LDFLAGS := -lcurl -lm $(shell ncursesw5-config --libs)
 
 ifdef DEBUG
 CFLAGS += -g -O0

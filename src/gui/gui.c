@@ -1,3 +1,5 @@
+#define _XOPEN_SOURCE_EXTENDED /* To get ncurses wide char support */
+
 #include <curses.h>
 #include <stdint.h>
 #include <string.h>
@@ -8,6 +10,7 @@
 #include "weibo_datatype.h"
 #include "gui_datatype.h"
 #include "weibo.h"
+#include "weibo_util.h"
 #include "comment.h"
 #include "user.h"
 #include "friend.h"
@@ -135,6 +138,7 @@ void wm_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVENT even
 	{
 	case KEY_F(8):
 	  endwin();
+	  deinit_debug_log();
 	  exit(EXIT_SUCCESS);
 	  break;
 	default:
@@ -175,7 +179,7 @@ PTR_WND wnd_init(PTR_WND_MANAGER wm_mgr, PTR_WND parent, const char* title, uint
   PTR_WND wnd = (PTR_WND) malloc(sizeof(WND));
   PTR_WND current = NULL;
 
-  wnd->title = strdup(title);
+  wnd->title = strdup((char*)title);
   wnd->x = x;
   wnd->y = y;
   if (parent != NULL) {
@@ -213,6 +217,7 @@ PTR_WND wnd_init(PTR_WND_MANAGER wm_mgr, PTR_WND parent, const char* title, uint
 void wnd_weibo_field_addstr(PTR_WND self, uint32_t y, uint32_t x, char* str, uint32_t limit)
 {
   const char* func_name = __func__;
+  cchar_t c;
   debug_log_enter(FINE, func_name, NULL);
   char* p = (char*)malloc(sizeof(char)*(limit+1));
   char* p1 = p;
@@ -231,6 +236,68 @@ void wnd_weibo_field_addstr(PTR_WND self, uint32_t y, uint32_t x, char* str, uin
     p++;
   }
   free(p1);
+  debug_log_exit(FINE, func_name);
+}
+
+uint8_t fillup_cchar_utf8(uint8_t* src, cchar_t* dst)
+{
+  uint8_t c = 1; /* length of utf8 coding of a char */
+  uint8_t i = *src & 0x80; /* indicator a char is ansi or multi bytes */
+  uint8_t j = 0;
+  wchar_t t1 = 0;
+  wchar_t t2[CCHARW_MAX] = {0};
+  attr_t attrs;
+  short int pairs;
+  
+  for (j=0; j<CCHARW_MAX; j++) {
+    t2[j] = '\0';
+  }
+  if (i == 0) {  /* it's ansi */
+    t2[0] = (wchar_t)(*src);
+    c = 1;
+  } else {
+    c = 0;
+    while (i != 0 && c <= 6) {
+      c++;
+      i = (*src<<c) & 0x80;
+    }
+    j = 0;
+    while (j < c-1) {
+      t1 = *(src+c-1-j) & 0x3F;
+      t2[0] = t2[0] | (t1<<(6*j));
+      j++;
+    }
+    t1 = *src & (0xFF>>(c+1));
+    t2[0] = t2[0] | (t1<<(6*(c-1)));
+  }
+  attr_get(&attrs, &pairs, NULL);
+  setcchar(dst, t2, attrs, pairs, NULL);
+  return c;
+}
+
+void wnd_weibo_field_addstr_w(PTR_WND self, uint32_t y, uint32_t x, char* str, uint32_t limit)
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, NULL);
+  cchar_t c;
+  uint8_t* p1 = (uint8_t*)str;
+  uint8_t offset = 0;
+  uint32_t orig_x = x;
+  uint32_t orig_y = y;
+  uint32_t i = 0;
+  memset(&c, 0, sizeof(c));
+  while(*p1 && y<self->height-2 && i<limit) {
+    offset = fillup_cchar_utf8(p1, &c);
+    wmove(self->curses_wnd, (int)y, (int)x);
+    wadd_wch(self->curses_wnd, &c);
+    getyx(self->curses_wnd, y, x);
+    if (x >= self->width-2) {
+      y += 1;
+      x = orig_x;
+    }
+    p1 = p1 + offset;
+    i++;
+  }
   debug_log_exit(FINE, func_name);
 }
 
@@ -296,8 +363,9 @@ void wnd_alert(PTR_WND_MANAGER wm_mgr, char* text)
   PTR_WND wnd = wnd_init(wm_mgr, NULL, "alert", 4, l>50?50:l, (wm_mgr->height-4)/2, (wm_mgr->width-50)/2);
   wnd->handler = wnd_alert_handler;
   wnd->show = wnd_alert_refresh;
-  wborder(wnd->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
-  wnd_weibo_field_addstr(wnd, 1, 2, text, l);
+  box_set(wnd->curses_wnd, WACS_VLINE, WACS_HLINE);
+  //  wborder_set(wnd->curses_wnd, WACS_VLINE, WACS_VLINE, WACS_HLINE, WACS_HLINE, WACS_ULCORNER, WACS_URCORNER, WACS_LLCORNER, WACS_LRCORNER);
+  wnd_weibo_field_addstr_w(wnd, 1, 2, text, l);
   wrefresh(wnd->curses_wnd);
   debug_log_exit(FINE, func_name);
 }
@@ -331,7 +399,7 @@ char* wnd_popinput(PTR_WND_MANAGER wm_mgr, PTR_WND parent, uint32_t height, uint
   wnd->show = wnd_popinput_refresh;
   wnd->parent = (void*)parent;
   wnd->usrdata = (void*)malloc(sizeof(char)*subwnd->height*subwnd->width);
-  wborder(wnd->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
+  wborder_set(wnd->curses_wnd, WACS_VLINE, WACS_VLINE, WACS_HLINE, WACS_HLINE, WACS_ULCORNER, WACS_URCORNER, WACS_LLCORNER, WACS_LRCORNER);
   curs_set(True);
   echo();
   wmove(subwnd->curses_wnd, 0, 0);
@@ -372,20 +440,20 @@ void wnd_weibo_initializer(PTR_WND self)
   uint32_t weibo_field_width = self->width-4;
   uint32_t weibo_field_height = ((WEIBO_CONTENT_LIMIT) / weibo_field_width) + 4;
   self->type = WT_PANEL;
-  wborder(self->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
+  wborder_set(self->curses_wnd, WACS_VLINE, WACS_VLINE, WACS_HLINE, WACS_HLINE, WACS_ULCORNER, WACS_URCORNER, WACS_LLCORNER, WACS_LRCORNER);
   wrefresh(self->curses_wnd);
   for (i=0; i<weibo_field_cnt; i++) {
     snprintf(s, 10, "%s-%ud", "weibo", i);
     wnd = wnd_init(self->wm_mgr, self, s, weibo_field_height, weibo_field_width, i*weibo_field_height+1, 1);
-    wborder(wnd->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
+    wborder_set(wnd->curses_wnd, WACS_VLINE, WACS_VLINE, WACS_HLINE, WACS_HLINE, WACS_ULCORNER, WACS_URCORNER, WACS_LLCORNER, WACS_LRCORNER);
     wrefresh(wnd->curses_wnd);
   }
-  wattron(self->children->curses_wnd, A_REVERSE);
+  wattron(self->children->curses_wnd, WA_REVERSE);
   self->usrdata = (void*)get_public_timeline(ACCESS_TOKEN, 1);
   wnd = self->children;
   weibo = (PTR_WEIBO_ENTITY)(self->usrdata);
   while(wnd && weibo) {
-    wnd_weibo_field_addstr(wnd, 1, 2, weibo->text, WEIBO_CONTENT_LIMIT);
+    wnd_weibo_field_addstr_w(wnd, 1, 2, weibo->text, WEIBO_CONTENT_LIMIT);
     wrefresh(wnd->curses_wnd);
     wnd = wnd->next;
     weibo = weibo->next;
@@ -474,10 +542,10 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
 	  p = NULL;
 	  break; 
 	case KEY_DOWN:
-	  wattroff(cursor->curses_wnd, A_REVERSE);
+	  wattroff(cursor->curses_wnd, WA_REVERSE);
 	  wnd_weibo_field_fillup(cursor, 1, 1, ' ');
 	  if (weibo != NULL) {
-	    wnd_weibo_field_addstr(cursor, 1, 2, weibo->text, WEIBO_CONTENT_LIMIT);
+	    wnd_weibo_field_addstr_w(cursor, 1, 2, weibo->text, WEIBO_CONTENT_LIMIT);
 	  }
 	  weibo = weibo==NULL?NULL:weibo->next;
 	  if (weibo == NULL) {
@@ -504,21 +572,21 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
 	  wnd = cursor;
 	  while (wnd) {
 	    werase(wnd->curses_wnd);
-	    wborder(wnd->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
+	    wborder_set(wnd->curses_wnd, WACS_VLINE, WACS_VLINE, WACS_HLINE, WACS_HLINE, WACS_ULCORNER, WACS_URCORNER, WACS_LLCORNER, WACS_LRCORNER);
 	    wnd = wnd->next;
 	  }
-	  wattron(cursor->curses_wnd, A_REVERSE);
+	  wattron(cursor->curses_wnd, WA_REVERSE);
 	  wnd = cursor;
 	  weibo1 = weibo;
 	  while (wnd && weibo1) {
-	    wnd_weibo_field_addstr(wnd, 1, 2, weibo1->text, WEIBO_CONTENT_LIMIT);
+	    wnd_weibo_field_addstr_w(wnd, 1, 2, weibo1->text, WEIBO_CONTENT_LIMIT);
 	    wrefresh(wnd->curses_wnd);
 	    wnd = wnd->next;
 	    weibo1 = weibo1->next;
 	  }
 	  break;
 	case KEY_UP:
-          wattroff(cursor->curses_wnd, A_REVERSE);
+          wattroff(cursor->curses_wnd, WA_REVERSE);
           wnd_weibo_field_fillup(cursor, 1, 1, ' ');
 	  weibo = weibo==NULL?NULL:weibo->prev;
           if (weibo == NULL) {
@@ -544,14 +612,14 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
 	  wnd = cursor;
 	  while (wnd) {
 	    werase(wnd->curses_wnd);
-	    wborder(wnd->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
+	    wborder_set(wnd->curses_wnd, WACS_VLINE, WACS_VLINE, WACS_HLINE, WACS_HLINE, WACS_ULCORNER, WACS_URCORNER, WACS_LLCORNER, WACS_LRCORNER);
 	    wnd = wnd->next;
 	  }
-	  wattron(cursor->curses_wnd, A_REVERSE);
+	  wattron(cursor->curses_wnd, WA_REVERSE);
 	  wnd = cursor;
 	  weibo1 = weibo;
 	  while (wnd && weibo1) {
-	    wnd_weibo_field_addstr(wnd, 1, 2, weibo1->text, WEIBO_CONTENT_LIMIT);
+	    wnd_weibo_field_addstr_w(wnd, 1, 2, weibo1->text, WEIBO_CONTENT_LIMIT);
 	    wrefresh(wnd->curses_wnd);
 	    wnd = wnd->next;
 	    weibo1 = weibo1->next;

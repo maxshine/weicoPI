@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
+#include <locale.h>
 #include "gui.h"
 #include "gui_datatype.h"
 #include "account.h"
@@ -23,6 +24,7 @@ uint32_t WEIBO_TYPE = 0; /* 0 --  public timeline; 1 -- user; 2 -- friend timeli
 
 void main(int argc, char *argv[])
 {
+  setlocale(LC_ALL, "");
   PTR_WND weibo_wnd = NULL;
   
   curl_global_init(CURL_GLOBAL_ALL);
@@ -45,7 +47,6 @@ void main(int argc, char *argv[])
   weibo_wnd->initializer(weibo_wnd);
   /*  refresh();*/
   wm_runloop(wm_mgr);
-  deinit_debug_log();
   free((void*)ACCESS_TOKEN);
   free((void*)USERID);
   free((void*)ACCOUNTID);
