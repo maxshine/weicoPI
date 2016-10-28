@@ -39,12 +39,13 @@ void main(int argc, char *argv[])
  
   sprintf(USERID, "%ld", get_account_userid(ACCESS_TOKEN));
   PTR_WND_MANAGER wm_mgr = wm_init();
-  weibo_wnd = wnd_init(wm_mgr, NULL, "weibo", wm_mgr->height, wm_mgr->width/2, 0, 0);
+  weibo_wnd = wnd_init(wm_mgr, NULL, "weibo", wm_mgr->height-2, wm_mgr->width/2, 0, 0);
   weibo_wnd->handler = wnd_weibo_handler;
   weibo_wnd->initializer = wnd_weibo_initializer;
   weibo_wnd->destroyer = wnd_weibo_destroyer;
-  weibo_wnd->show = wnd_weibo_refresh;
+  weibo_wnd->show = wnd_generic_refresh;
   weibo_wnd->initializer(weibo_wnd);
+  weibo_wnd->show(wm_mgr, weibo_wnd, NULL);
   /*  refresh();*/
   wm_runloop(wm_mgr);
   free((void*)ACCESS_TOKEN);

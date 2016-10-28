@@ -1,4 +1,5 @@
 #define _XOPEN_SOURCE_EXTENDED /* To get ncurses wide char support */
+#define __USE_XOPEN_EXTENDED
 
 #include <curses.h>
 #include <stdint.h>
@@ -163,10 +164,12 @@ PTR_WND_MANAGER wm_init(void)
   wm_mgr->handler = wm_handler;
   initscr();
   getmaxyx(stdscr, wm_mgr->height, wm_mgr->width);
-  cbreak();
-  noecho();
+  cbreak(); /* initially, the screen should disable line buffer */
+  noecho(); /* the screen should disable input character echo by default */
   keypad(stdscr, TRUE);
+  mvaddstr(wm_mgr->height-1, 0, "F1 -- Post  F2 -- Comment  F3 -- Repost  F8 -- Exit");
   curs_set(0); /* invisible cursor */
+  refresh();
   debug_log_exit(FINE, func_name);
   return wm_mgr;
 }
@@ -179,7 +182,7 @@ PTR_WND wnd_init(PTR_WND_MANAGER wm_mgr, PTR_WND parent, const char* title, uint
   PTR_WND wnd = (PTR_WND) malloc(sizeof(WND));
   PTR_WND current = NULL;
 
-  wnd->title = strdup((char*)title);
+  wnd->title = (char*)strdup((char*)title);
   wnd->x = x;
   wnd->y = y;
   if (parent != NULL) {
@@ -193,6 +196,10 @@ PTR_WND wnd_init(PTR_WND_MANAGER wm_mgr, PTR_WND parent, const char* title, uint
   wnd->width = width;
   wnd->parent = parent;
   wnd->wm_mgr = wm_mgr;
+  wnd->show = NULL;
+  wnd->initializer = NULL;
+  wnd->destroyer = NULL;
+  wnd->handler = NULL;
   if (parent != NULL) {
     current = parent->children;
     while (current && current->next) {
@@ -291,7 +298,7 @@ void wnd_weibo_field_addstr_w(PTR_WND self, uint32_t y, uint32_t x, char* str, u
     wmove(self->curses_wnd, (int)y, (int)x);
     wadd_wch(self->curses_wnd, &c);
     getyx(self->curses_wnd, y, x);
-    if (x >= self->width-2) {
+    if (x >= self->width-4) {
       y += 1;
       x = orig_x;
     }
@@ -363,8 +370,7 @@ void wnd_alert(PTR_WND_MANAGER wm_mgr, char* text)
   PTR_WND wnd = wnd_init(wm_mgr, NULL, "alert", 4, l>50?50:l, (wm_mgr->height-4)/2, (wm_mgr->width-50)/2);
   wnd->handler = wnd_alert_handler;
   wnd->show = wnd_alert_refresh;
-  box_set(wnd->curses_wnd, WACS_VLINE, WACS_HLINE);
-  //  wborder_set(wnd->curses_wnd, WACS_VLINE, WACS_VLINE, WACS_HLINE, WACS_HLINE, WACS_ULCORNER, WACS_URCORNER, WACS_LLCORNER, WACS_LRCORNER);
+  wborder(wnd->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
   wnd_weibo_field_addstr_w(wnd, 1, 2, text, l);
   wrefresh(wnd->curses_wnd);
   debug_log_exit(FINE, func_name);
@@ -387,6 +393,7 @@ void wnd_popinput_refresh(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data)
   debug_log_exit(FINE, func_name);
 }
 
+
 char* wnd_popinput(PTR_WND_MANAGER wm_mgr, PTR_WND parent, uint32_t height, uint32_t width)
 {
   const char* func_name = __func__;
@@ -399,7 +406,7 @@ char* wnd_popinput(PTR_WND_MANAGER wm_mgr, PTR_WND parent, uint32_t height, uint
   wnd->show = wnd_popinput_refresh;
   wnd->parent = (void*)parent;
   wnd->usrdata = (void*)malloc(sizeof(char)*subwnd->height*subwnd->width);
-  wborder_set(wnd->curses_wnd, WACS_VLINE, WACS_VLINE, WACS_HLINE, WACS_HLINE, WACS_ULCORNER, WACS_URCORNER, WACS_LLCORNER, WACS_LRCORNER);
+  wborder(wnd->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
   curs_set(True);
   echo();
   wmove(subwnd->curses_wnd, 0, 0);
@@ -418,13 +425,31 @@ char* wnd_popinput(PTR_WND_MANAGER wm_mgr, PTR_WND parent, uint32_t height, uint
   event.usrdata = wnd->usrdata;
   wnd->parent->handler(wm_mgr, wnd, wnd->parent, &event);
   */
-  p = strdup((char*)wnd->usrdata);
+  p = (char*)strdup((wnd->usrdata));
   delwin(subwnd->curses_wnd);
   free(subwnd->title);
   free(subwnd);
   free(wnd->usrdata);
   wm_mgr->pop(wm_mgr, wnd);
+  debug_log_exit(FINE, func_name);
   return p;
+}
+
+void wnd_generic_refresh(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data)
+{
+  const char* func_name = __func__;
+  PTR_WND child = self->children;
+  debug_log_enter(FINE, func_name, NULL);
+  //redrawwin(self->curses_wnd);
+  touchwin(self->curses_wnd);
+  wrefresh(self->curses_wnd);
+  while(child) {
+    if(child->show) {
+      child->show(wm_mgr, child, data);
+    }
+    child = child->next;
+
+  }
   debug_log_exit(FINE, func_name);
 }
 
@@ -437,18 +462,18 @@ void wnd_weibo_initializer(PTR_WND self)
   PTR_WEIBO_ENTITY weibo;
   uint32_t i = 0;
   uint32_t weibo_field_cnt = 5;
-  uint32_t weibo_field_width = self->width-4;
+  uint32_t weibo_field_width = self->width-8;
   uint32_t weibo_field_height = ((WEIBO_CONTENT_LIMIT) / weibo_field_width) + 4;
   self->type = WT_PANEL;
-  wborder_set(self->curses_wnd, WACS_VLINE, WACS_VLINE, WACS_HLINE, WACS_HLINE, WACS_ULCORNER, WACS_URCORNER, WACS_LLCORNER, WACS_LRCORNER);
+  wborder(self->curses_wnd,ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
   wrefresh(self->curses_wnd);
   for (i=0; i<weibo_field_cnt; i++) {
     snprintf(s, 10, "%s-%ud", "weibo", i);
-    wnd = wnd_init(self->wm_mgr, self, s, weibo_field_height, weibo_field_width, i*weibo_field_height+1, 1);
-    wborder_set(wnd->curses_wnd, WACS_VLINE, WACS_VLINE, WACS_HLINE, WACS_HLINE, WACS_ULCORNER, WACS_URCORNER, WACS_LLCORNER, WACS_LRCORNER);
+    wnd = wnd_init(self->wm_mgr, self, s, weibo_field_height, weibo_field_width, i*weibo_field_height+1, 4);
+    wborder(wnd->curses_wnd,ACS_VLINE,ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
     wrefresh(wnd->curses_wnd);
   }
-  wattron(self->children->curses_wnd, WA_REVERSE);
+  wattron(self->children->curses_wnd, A_REVERSE);
   self->usrdata = (void*)get_public_timeline(ACCESS_TOKEN, 1);
   wnd = self->children;
   weibo = (PTR_WEIBO_ENTITY)(self->usrdata);
@@ -457,7 +482,7 @@ void wnd_weibo_initializer(PTR_WND self)
     wrefresh(wnd->curses_wnd);
     wnd = wnd->next;
     weibo = weibo->next;
-  }
+    }
   debug_log_exit(FINE, func_name);
 }
 
@@ -483,7 +508,7 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
   debug_log_enter(FINE, func_name, NULL);
   static PTR_WND cursor = NULL;
   static PTR_WEIBO_ENTITY weibo = NULL;
-  static uint32_t action = 0; /* 0 -- post new weibo; 1 -- comment weibo; 2 -- repost weibo */
+  static uint32_t action = 0; /* 0 -- F1 post new weibo; 1 -- F2 comment weibo; 2 -- F3 repost weibo */
   PTR_WEIBO_ENTITY weibo1 = NULL;
   PTR_WND wnd = dst->children;
   char* p = NULL;
@@ -572,7 +597,7 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
 	  wnd = cursor;
 	  while (wnd) {
 	    werase(wnd->curses_wnd);
-	    wborder_set(wnd->curses_wnd, WACS_VLINE, WACS_VLINE, WACS_HLINE, WACS_HLINE, WACS_ULCORNER, WACS_URCORNER, WACS_LLCORNER, WACS_LRCORNER);
+	    wborder(wnd->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
 	    wnd = wnd->next;
 	  }
 	  wattron(cursor->curses_wnd, WA_REVERSE);
@@ -612,7 +637,7 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
 	  wnd = cursor;
 	  while (wnd) {
 	    werase(wnd->curses_wnd);
-	    wborder_set(wnd->curses_wnd, WACS_VLINE, WACS_VLINE, WACS_HLINE, WACS_HLINE, WACS_ULCORNER, WACS_URCORNER, WACS_LLCORNER, WACS_LRCORNER);
+	    wborder(wnd->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
 	    wnd = wnd->next;
 	  }
 	  wattron(cursor->curses_wnd, WA_REVERSE);

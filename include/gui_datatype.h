@@ -21,7 +21,8 @@ typedef struct event {
 typedef enum mywindow_type {
   WT_TEXT_FIELD,
   WT_INPUT_FIELD,
-  WT_PANEL
+  WT_PANEL,
+  WT_ALERT
 } WND_TYPE;
 
 struct mywindow_manager;
