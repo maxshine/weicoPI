@@ -1,0 +1,52 @@
+#define _XOPEN_SOURCE_EXTENDED /* To get ncurses wide char support */
+#define __USE_XOPEN_EXTENDED
+
+#include <curses.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include "constants.h"
+#include "datatype.h"
+#include "gui_datatype.h"
+#include "debug_util.h"
+
+
+uint8_t fillup_cchar_utf8(uint8_t* src, cchar_t* dst)
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, NULL);
+  uint8_t c = 1; /* length of utf8 coding of a char */
+  uint8_t i = *src & 0x80; /* indicator a char is ansi or multi bytes */
+  uint8_t j = 0;
+  wchar_t t1 = 0;
+  wchar_t t2[CCHARW_MAX] = {0};
+  attr_t attrs;
+  short int pairs;
+  
+  for (j=0; j<CCHARW_MAX; j++) {
+    t2[j] = '\0';
+  }
+  if (i == 0) {  /* it's ansi */
+    t2[0] = (wchar_t)(*src);
+    c = 1;
+  } else {
+    c = 0;
+    while (i != 0 && c <= 6) {
+      c++;
+      i = (*src<<c) & 0x80;
+    }
+    j = 0;
+    while (j < c-1) {
+      t1 = *(src+c-1-j) & 0x3F;
+      t2[0] = t2[0] | (t1<<(6*j));
+      j++;
+    }
+    t1 = *src & (0xFF>>(c+1));
+    t2[0] = t2[0] | (t1<<(6*(c-1)));
+  }
+  attr_get(&attrs, &pairs, NULL);
+  setcchar(dst, t2, attrs, pairs, NULL);
+  debug_log_exit(FINE, func_name);
+  return c;
+}

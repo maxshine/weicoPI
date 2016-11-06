@@ -26,6 +26,7 @@ void main(int argc, char *argv[])
 {
   setlocale(LC_ALL, "");
   PTR_WND weibo_wnd = NULL;
+  int i = 1;
   
   curl_global_init(CURL_GLOBAL_ALL);
   init_debug_log("weicoPi.log", FINEST);
@@ -39,13 +40,15 @@ void main(int argc, char *argv[])
  
   sprintf(USERID, "%ld", get_account_userid(ACCESS_TOKEN));
   PTR_WND_MANAGER wm_mgr = wm_init();
-  weibo_wnd = wnd_init(wm_mgr, NULL, "weibo", wm_mgr->height-2, wm_mgr->width/2, 0, 0);
+  /*  weibo_wnd = wnd_init(wm_mgr, NULL, "weibo", wm_mgr->height-2, wm_mgr->width/2, 0, 0);
   weibo_wnd->handler = wnd_weibo_handler;
   weibo_wnd->initializer = wnd_weibo_initializer;
   weibo_wnd->destroyer = wnd_weibo_destroyer;
   weibo_wnd->show = wnd_generic_refresh;
   weibo_wnd->initializer(weibo_wnd);
-  weibo_wnd->show(wm_mgr, weibo_wnd, NULL);
+  weibo_wnd->show(wm_mgr, weibo_wnd, NULL);*/
+  weibo_wnd = wnd_weibo_create(wm_mgr, NULL, wm_mgr->height-2, wm_mgr->width/2, 0, 0);
+  weibo_wnd->show(wm_mgr, weibo_wnd, weibo_wnd->children);
   /*  refresh();*/
   wm_runloop(wm_mgr);
   free((void*)ACCESS_TOKEN);

@@ -150,40 +150,43 @@ void debug_log_enter(LogLevel level, const char* function_name, const char* form
 		format_length = strlen(format);
 		va_start(vg, format);
 		while(c=*(format+i)) {
-			switch(c){
-				case 'd':
-					sprintf(message, "%s : %d", message_1, va_arg(vg, int));
-					free(message_1);
-					message_1 = message;
-					message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
-					memset(message, 0, (1000+strlen(message_1))*sizeof(char));
-					i++;
-					break;
-				case 'f':
-					sprintf(message, "%s : %lf", message_1, va_arg(vg, double));
-					free(message_1);
-	                                message_1 = message;
-					message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
-					memset(message, 0, (1000+strlen(message_1))*sizeof(char));
-					i++;
-					break;
-				case 's':
-					sprintf(message, "%s : %s", message_1, va_arg(vg, char*));
-					free(message_1);
-	                                message_1 = message;
-					message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
-					memset(message, 0, (1000+strlen(message_1))*sizeof(char));
-					i++;
-					break;
-				case 'p':
-					sprintf(message, "%s : %p", message_1, va_arg(vg, void*));
-					free(message_1);
-	                                message_1 = message;
-					message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
-					memset(message, 0, (1000+strlen(message_1))*sizeof(char));
-					i++;
-					break;
-			}
+		  switch(c){
+			case 'd':
+			  sprintf(message, "%s : %d", message_1, va_arg(vg, int));
+			  free(message_1);
+			  message_1 = message;
+			  message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
+			  memset(message, 0, (1000+strlen(message_1))*sizeof(char));
+			  i++;
+			  break;
+			case 'f':
+			  sprintf(message, "%s : %lf", message_1, va_arg(vg, double));
+			  free(message_1);
+			  message_1 = message;
+			  message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
+			  memset(message, 0, (1000+strlen(message_1))*sizeof(char));
+			  i++;
+			  break;
+			case 's':
+			  sprintf(message, "%s : %s", message_1, va_arg(vg, char*));
+			  free(message_1);
+			  message_1 = message;
+			  message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
+			  memset(message, 0, (1000+strlen(message_1))*sizeof(char));
+			  i++;
+			  break;
+			case 'p':
+			  sprintf(message, "%s : %p", message_1, va_arg(vg, void*));
+			  free(message_1);
+			  message_1 = message;
+			  message = (char*)malloc((1000+strlen(message_1))*sizeof(char));
+			  memset(message, 0, (1000+strlen(message_1))*sizeof(char));
+			  i++;
+			  break;
+			default:
+			  i++;
+			  break;
+		  }
 		}
 		va_end(vg);
 	}
