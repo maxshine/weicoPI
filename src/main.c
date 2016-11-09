@@ -5,6 +5,8 @@
 #include <curl/curl.h>
 #include <locale.h>
 #include "gui.h"
+#include "gui_alert.h"
+#include "gui_popinput.h"
 #include "gui_datatype.h"
 #include "account.h"
 #include "weibo.h"
@@ -20,14 +22,14 @@ char* ACCOUNTID = NULL;
 char* FRIENDID = NULL;
 const char* AUTH_FILENAME = "/home/pi/weicoPi/config/authorization_code";
 uint32_t PAGE = 1;       /* start with page #1 */
-uint32_t WEIBO_TYPE = 0; /* 0 --  public timeline; 1 -- user; 2 -- friend timeline*/
+uint32_t WEIBO_TYPE = 0; /* 0 --  public timeline; 1 -- user timeline; 2 -- friend timeline*/
 
 void main(int argc, char *argv[])
 {
   setlocale(LC_ALL, "");
   PTR_WND weibo_wnd = NULL;
   int i = 1;
-  
+  char* p = NULL;
   curl_global_init(CURL_GLOBAL_ALL);
   init_debug_log("weicoPi.log", FINEST);
   ACCESS_TOKEN = get_auth_code(AUTH_FILENAME);
@@ -49,6 +51,8 @@ void main(int argc, char *argv[])
   weibo_wnd->show(wm_mgr, weibo_wnd, NULL);*/
   weibo_wnd = wnd_weibo_create(wm_mgr, NULL, wm_mgr->height-2, wm_mgr->width/2, 0, 0);
   weibo_wnd->show(wm_mgr, weibo_wnd, weibo_wnd->children);
+  p = wnd_popinput(wm_mgr, 2, 50);
+  wnd_alert(wm_mgr, p);
   /*  refresh();*/
   wm_runloop(wm_mgr);
   free((void*)ACCESS_TOKEN);

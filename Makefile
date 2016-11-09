@@ -14,7 +14,7 @@ vpath %.c $(SOURCEPATH)/http/:$(SOURCEPATH)/gui/:$(SOURCEPATH)/api/:$(SOURCEPATH
 vpath %.h $(MAINPATH)/include/
 vpath %.o $(MAINPATH)/build/
 
-objects := main.o gui.o gui_textfield.o gui_generic.o gui_util.o init.o weibo.o comment.o user.o account.o friend.o cJSON.o weibo_util.o http_action.o http_util.o debug_util.o  
+objects := main.o gui.o gui_alert.o gui_popinput.o gui_textfield.o gui_generic.o gui_util.o init.o weibo.o comment.o user.o account.o friend.o cJSON.o weibo_util.o http_action.o http_util.o debug_util.o  
 
 jsons := cJSON.h cJSON.c
 
@@ -28,7 +28,7 @@ api := weibo.h weibo.c comment.h comment.c friend.h friend.c user.h user.c accou
 
 util := init.h init.c
 
-gui := gui.c gui.h gui_util.c gui_util.h gui_generic.c gui_generic.h gui_textfield.c gui_textfield.h
+gui := gui.c gui.h gui_util.c gui_util.h gui_generic.c gui_generic.h gui_textfield.c gui_textfield.h gui_alert.h gui_alert.c gui_popinput.h gui_popinput.c
 
 weicoPi : $(objects)
 	cd $(OUTPATH);gcc $(LDFLAGS) $^ -o $(MAINPATH)/$@
@@ -38,6 +38,12 @@ main.o : init.c init.h main.c $(api) $(common) $(gui)
 
 gui.o : $(gui) $(api) $(common)
 	gcc $(CFLAGS) $(SOURCEPATH)/gui/gui.c -o $(OUTPATH)/gui.o
+
+gui_alert.o : $(gui) $(common)
+	gcc $(CFLAGS) $(SOURCEPATH)/gui/gui_alert.c -o $(OUTPATH)/gui_alert.o
+
+gui_popinput.o : $(gui) $(common)
+	gcc $(CFLAGS) $(SOURCEPATH)/gui/gui_popinput.c -o $(OUTPATH)/gui_popinput.o
 
 gui_textfield.o : $(gui) $(common)
 	gcc $(CFLAGS) $(SOURCEPATH)/gui/gui_textfield.c -o $(OUTPATH)/gui_textfield.o

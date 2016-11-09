@@ -10,6 +10,8 @@
 #include "datatype.h"
 #include "weibo_datatype.h"
 #include "gui_datatype.h"
+#include "gui_alert.h"
+#include "gui_popinput.h"
 #include "gui_generic.h"
 #include "gui_textfield.h"
 #include "gui_util.h"
@@ -198,116 +200,6 @@ PTR_WND_MANAGER wm_init(void)
   return wm_mgr;
 }
 
-void wnd_alert_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVENT event)
-{
-  const char* func_name = __func__;
-  debug_log_enter(FINE, func_name, NULL);
-
-  switch(event->type)
-    {
-    case ET_KEY_PRESSED:
-      switch(event->key)
-        {
-        case KEY_ENTER:
-	case 0012:
-	  werase(dst->curses_wnd);
-	  wrefresh(dst->curses_wnd);
-	  wm_mgr->pop(wm_mgr, dst);
-          break;
-	default:
-	  break;
-	}
-      break;
-    default:
-      break;
-    }
-  debug_log_exit(FINE, func_name);
-}
-
-void wnd_alert_refresh(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data)
-{
-  const char* func_name = __func__;
-  debug_log_enter(FINE, func_name, NULL);
-  touchwin(self->curses_wnd);
-  wrefresh(self->curses_wnd);
-  debug_log_exit(FINE, func_name);
-}
-
-void wnd_alert(PTR_WND_MANAGER wm_mgr, char* text)
-{
-  const char* func_name = __func__;
-  debug_log_enter(FINE, func_name, NULL);
-  uint32_t l = (uint32_t) strlen(text);
-  l += 5;
-  PTR_WND wnd = wnd_init(wm_mgr, NULL, "alert", 4, l>50?50:l, (wm_mgr->height-4)/2, (wm_mgr->width-50)/2);
-  wnd->handler = wnd_alert_handler;
-  wnd->show = wnd_alert_refresh;
-  wborder(wnd->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
-  wnd_generic_addstr_w(wnd, 1, 2, text, l);
-  wrefresh(wnd->curses_wnd);
-  debug_log_exit(FINE, func_name);
-}
-
-void wnd_popinput_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVENT event)
-{
-  const char* func_name = __func__;
-  debug_log_enter(FINE, func_name, NULL);
-
-  debug_log_exit(FINE, func_name);
-}
-
-void wnd_popinput_refresh(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data)
-{
-  const char* func_name = __func__;
-  debug_log_enter(FINE, func_name, NULL);
-  touchwin(self->curses_wnd);
-  wrefresh(self->curses_wnd);
-  debug_log_exit(FINE, func_name);
-}
-
-
-char* wnd_popinput(PTR_WND_MANAGER wm_mgr, PTR_WND parent, uint32_t height, uint32_t width)
-{
-  const char* func_name = __func__;
-  debug_log_enter(FINE, func_name, NULL);
-  EVENT event;
-  char* p = NULL;
-  PTR_WND wnd = wnd_init(wm_mgr, NULL, "input", height+2, width+4, (wm_mgr->height-height)/2, (wm_mgr->width-width)/2);
-  PTR_WND subwnd = wnd_init(wm_mgr, wnd, "inputfield", height, width, 1, 2);
-  wnd->handler = wnd_popinput_handler;
-  wnd->show = wnd_popinput_refresh;
-  wnd->parent = (void*)parent;
-  wnd->user_data = (void*)malloc(sizeof(char)*subwnd->height*subwnd->width);
-  wborder(wnd->curses_wnd, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
-  curs_set(True);
-  echo();
-  wmove(subwnd->curses_wnd, 0, 0);
-  wrefresh(wnd->curses_wnd);
-  wrefresh(subwnd->curses_wnd);
-  wgetnstr(subwnd->curses_wnd, (char*)wnd->user_data, subwnd->height*subwnd->width-1);
-  debug_log(FINE, func_name, (char*)wnd->user_data);
-  noecho();
-  curs_set(False);
-  werase(subwnd->curses_wnd);
-  werase(wnd->curses_wnd);
-  wrefresh(subwnd->curses_wnd);
-  wrefresh(wnd->curses_wnd);
-  /*
-  event.type = ET_INPUT_COMPLETE;
-  event.usrdata = wnd->usrdata;
-  wnd->parent->handler(wm_mgr, wnd, wnd->parent, &event);
-  */
-  p = (char*)strdup((wnd->user_data));
-  delwin(subwnd->curses_wnd);
-  free(subwnd->title);
-  free(subwnd);
-  free(wnd->user_data);
-  wm_mgr->pop(wm_mgr, wnd);
-  debug_log_exit(FINE, func_name);
-  return p;
-}
-
-
 void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVENT event)
 {
   const char* func_name = __func__;
@@ -341,7 +233,7 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
         {
         case KEY_F(1):
 	  action = 0;
-	  p = wnd_popinput(wm_mgr, dst, 3, 50);
+	  //	  p = wnd_popinput(wm_mgr, dst, 3, 50);
 	  if(create_weibo_text((const char*)ACCESS_TOKEN, (const char*) p)) {
 	    wnd_alert(wm_mgr, "Weibo posted");
 	  } else {
@@ -352,7 +244,7 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
           break;
 	case KEY_F(2):
 	  action = 1;
-	  p = wnd_popinput(wm_mgr, dst, 3, 50);
+	  //	  p = wnd_popinput(wm_mgr, dst, 3, 50);
 	  if(repost_weibo((const char*)ACCESS_TOKEN, (const char*) p, (const char*) weibo->idstr)) {
             wnd_alert(wm_mgr, "Weibo reposted");
           } else {
@@ -363,7 +255,7 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
 	  break;
 	case KEY_F(3):
 	  action = 2;
-	  p = wnd_popinput(wm_mgr, dst, 3, 50);
+	  //	  p = wnd_popinput(wm_mgr, dst, 3, 50);
 	  if(create_comment((const char*)ACCESS_TOKEN, (const char *)weibo->idstr, (const char *)p)) {
             wnd_alert(wm_mgr, "Comment posted");
           } else {

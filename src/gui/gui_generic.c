@@ -37,7 +37,6 @@ void wnd_generic_addstr(PTR_WND self, uint32_t y, uint32_t x, char* str, uint32_
   debug_log_exit(FINE, func_name);
 }
 
-
 void wnd_generic_addstr_w(PTR_WND self, uint32_t y, uint32_t x, char* str, uint32_t limit)
 {
   const char* func_name = __func__;
@@ -94,6 +93,7 @@ void wnd_generic_destroyer(PTR_WND self)
   if (self->user_data != NULL) {
     free(self->user_data);
   }
+  werase(self->curses_wnd);
   delwin(self->curses_wnd);
   free(self->title);
 }
