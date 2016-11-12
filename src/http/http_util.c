@@ -83,8 +83,8 @@ size_t parse_header( void *ptr, size_t size, size_t nmemb, void  *userdata)
     memset((void*)(response->headers[response->headers_qty-1].name), '\0', 30*sizeof(char));
     memset((void*)(response->headers[response->headers_qty-1].value), '\0', size*nmemb*sizeof(char)+1);
   }
-  strncpy(response->headers[response->headers_qty-1].name, trim(p), 30);
-  strncpy(response->headers[response->headers_qty-1].value, trim(i+1), size*nmemb);
+  strncpy((char*)(response->headers[response->headers_qty-1].name), trim(p), 30);
+  strncpy((char*)(response->headers[response->headers_qty-1].value), trim(i+1), size*nmemb);
   debug_log_exit(FINE, func_name);
   return size*nmemb;
 }

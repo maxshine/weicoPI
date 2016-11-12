@@ -30,7 +30,7 @@ extern char* USERID;
 extern char* ACCOUNTID;
 extern char* FRIENDID;
 extern uint32_t PAGE;  /* start with page #1 */
-extern uint32_t WEIBO_TYPE; /* 0 --  public timeline; 1 -- user timeline; 2 -- friend timeline*/
+extern uint32_t WEIBO_TYPE; /* 0 --  public timeline; 1 -- home timeline; 2 -- self timeline*/
 
 void wm_runloop(PTR_WND_MANAGER wm_mgr)
 {
@@ -162,7 +162,7 @@ void wm_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVENT even
     case ET_KEY_PRESSED:
       switch(key)
 	{
-	case KEY_F(8):
+	case KEY_F(12):
 	  endwin();
 	  deinit_debug_log();
 	  exit(EXIT_SUCCESS);
@@ -193,7 +193,7 @@ PTR_WND_MANAGER wm_init(void)
   cbreak(); /* initially, the screen should disable line buffer */
   noecho(); /* the screen should disable input character echo by default */
   keypad(stdscr, TRUE);
-  mvaddstr(wm_mgr->height-1, 0, "F1 -- Post  F2 -- Report  F3 -- Comment  F8 -- Exit");
+  mvaddstr(wm_mgr->height-1, 0, "F1 -- Post  F2 -- Repost  F3 -- Comment  F5 -- Refresh  F6 -- Public  F7 -- Home  F8 -- Self  F12 -- Exit");
   curs_set(0); /* invisible cursor */
   refresh();
   debug_log_exit(FINE, func_name);
@@ -206,7 +206,7 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
   debug_log_enter(FINE, func_name, NULL);
   static PTR_WND cursor = NULL;
   static PTR_WEIBO_ENTITY weibo = NULL;
-  static uint32_t action = 0; /* 0 -- F1 post new weibo; 1 -- F2 comment weibo; 2 -- F3 repost weibo */
+  static uint32_t action = 0; /* 0 -- F1 post new weibo; 1 -- F2 repost weibo; 2 -- F3 comment weibo */
   PTR_WEIBO_ENTITY weibo1 = NULL;
   PTR_WND wnd = dst->children;
   char* p = NULL;
@@ -222,9 +222,9 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
     case ET_INPUT_COMPLETE:
       if (action == 0) {
 	create_weibo_text((const char*)ACCESS_TOKEN, (const char*) event->user_data);
-      } else if (action == 2) {
-	repost_weibo((const char*)ACCESS_TOKEN, (const char*) event->user_data, (const char*) weibo->idstr);
       } else if (action == 1) {
+	repost_weibo((const char*)ACCESS_TOKEN, (const char*) event->user_data, (const char*) weibo->idstr);
+      } else if (action == 2) {
 	create_comment((const char*)ACCESS_TOKEN, (const char *)weibo->idstr, (const char *)event->user_data);
       }
       break;
@@ -274,10 +274,10 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
 		dst->user_data = (void*)get_public_timeline(ACCESS_TOKEN, ++PAGE);
 		break;
 	      case 1:
-		dst->user_data = (void*)get_user_timeline_byid(ACCESS_TOKEN, USERID, ++PAGE);
+		dst->user_data = (void*)get_home_timeline(ACCESS_TOKEN, USERID, ++PAGE);
 		break;
 	      case 2:
-		dst->user_data = (void*)get_friend_timeline(ACCESS_TOKEN, ++PAGE);
+		dst->user_data = (void*)get_self_timeline(ACCESS_TOKEN, ++PAGE);
 		break;
 	      }
 	    weibo = (PTR_WEIBO_ENTITY)(dst->user_data);
@@ -311,10 +311,10 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
                 dst->user_data = (void*)get_public_timeline(ACCESS_TOKEN, PAGE==1?1:(--PAGE));
                 break;
               case 1:
-                dst->user_data = (void*)get_user_timeline_byid(ACCESS_TOKEN, USERID, PAGE==1?1:(--PAGE));
+                dst->user_data = (void*)get_home_timeline(ACCESS_TOKEN, USERID, PAGE==1?1:(--PAGE));
                 break;
               case 2:
-                dst->user_data = (void*)get_friend_timeline(ACCESS_TOKEN, PAGE==1?1:(--PAGE));
+                dst->user_data = (void*)get_self_timeline(ACCESS_TOKEN, PAGE==1?1:(--PAGE));
                 break;
               }
             weibo = (PTR_WEIBO_ENTITY)(dst->user_data);

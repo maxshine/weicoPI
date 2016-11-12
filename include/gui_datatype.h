@@ -1,5 +1,4 @@
 #define _XOPEN_SOURCE_EXTENDED /* To get ncurses wide char support */
-#define __USE_XOPEN_EXTENDED
 
 #include <curses.h>
 #include <stdint.h>
