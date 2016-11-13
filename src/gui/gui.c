@@ -270,6 +270,66 @@ void wnd_weibo_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
 	  free(p);
 	  p = NULL;
 	  break; 
+	case KEY_F(6):
+	  WEIBO_TYPE = 0;
+	  destroy_weibo_entity_list((PTR_WEIBO_ENTITY)dst->user_data);
+	  PAGE = 1;
+	  dst->user_data = (void*)get_public_timeline(ACCESS_TOKEN, PAGE);
+	  weibo = (PTR_WEIBO_ENTITY)(dst->user_data);
+	  cursor = dst->children;
+	  weibo1 = weibo;
+	  wnd = cursor;
+	  while (wnd) {
+	    if (weibo1 == NULL) {
+	      wnd->user_data = NULL;
+	    } else {
+	      wnd->user_data = weibo1->text;
+	    }
+	    wnd = wnd->next;
+	    weibo1 = weibo1==NULL?NULL:weibo1->next;
+	  }
+	  dst->show(wm_mgr, dst, cursor);
+	  break;
+        case KEY_F(7):
+          WEIBO_TYPE = 1;
+          destroy_weibo_entity_list((PTR_WEIBO_ENTITY)dst->user_data);
+          PAGE = 1;
+          dst->user_data = (void*)get_home_timeline(ACCESS_TOKEN, PAGE);
+          weibo = (PTR_WEIBO_ENTITY)(dst->user_data);
+          cursor = dst->children;
+          weibo1 = weibo;
+          wnd = cursor;
+          while (wnd) {
+            if (weibo1 == NULL) {
+              wnd->user_data = NULL;
+            } else {
+              wnd->user_data = weibo1->text;
+            }
+            wnd = wnd->next;
+            weibo1 = weibo1==NULL?NULL:weibo1->next;
+          }
+          dst->show(wm_mgr, dst, cursor);
+	  break;
+        case KEY_F(8):
+          WEIBO_TYPE = 2;
+          destroy_weibo_entity_list((PTR_WEIBO_ENTITY)dst->user_data);
+          PAGE = 1;
+          dst->user_data = (void*)get_self_timeline(ACCESS_TOKEN, PAGE);
+          weibo = (PTR_WEIBO_ENTITY)(dst->user_data);
+          cursor = dst->children;
+          weibo1 = weibo;
+          wnd = cursor;
+          while (wnd) {
+            if (weibo1 == NULL) {
+              wnd->user_data = NULL;
+            } else {
+              wnd->user_data = weibo1->text;
+            }
+            wnd = wnd->next;
+            weibo1 = weibo1==NULL?NULL:weibo1->next;
+          }
+          dst->show(wm_mgr, dst, cursor);
+	  break;
 	case KEY_DOWN:
 	  weibo = weibo==NULL?NULL:weibo->next;
 	  if (weibo == NULL) {
