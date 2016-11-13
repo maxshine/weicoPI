@@ -32,14 +32,21 @@ BOOL create_weibo_text(const char* access_token, const char* text)
   request->body_length = strlen((char*)(request->body));
   response = https_post(WEIBO_CREATE_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return False;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return False;
   }
+  free_http_request(request);
+  free_http_response(response);
+  cJSON_Delete(root);
   debug_log_exit(FINE, func_name);
   return True;
 }
@@ -63,14 +70,21 @@ BOOL destroy_weibo(const char* access_token, const char* weibo_id)
   request->body_length = strlen((char*)(request->body));
   response = https_post(WEIBO_CREATE_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return False;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return False;
   }
+  free_http_request(request);
+  free_http_response(response);
+  cJSON_Delete(root);
   debug_log_exit(FINE, func_name);
   return True;
 }
@@ -97,14 +111,21 @@ BOOL repost_weibo(const char* access_token, const char* text, const char* weibo_
   request->body_length = strlen((char*)(request->body));
   response = https_post(WEIBO_REPOST_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return False;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return False;
   }
+  free_http_request(request);
+  free_http_response(response);
+  cJSON_Delete(root);
   debug_log_exit(FINE, func_name);
   return True;
 }
@@ -128,14 +149,21 @@ BOOL create_weibo_pic(const char* access_token, const char* text, const char* pi
 
   response = https_post(WEIBO_CREATE_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return False;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return False;
   }
+  free_http_request(request);
+  free_http_response(response);
+  cJSON_Delete(root);
   debug_log_exit(FINE, func_name);
   return True;
 }
@@ -156,11 +184,15 @@ PTR_WEIBO_ENTITY show_single_weibo_byid(const char* access_token, const char* we
 
   response = https_get(WEIBO_SHOW_WEIBO_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return NULL;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return NULL;
   }
@@ -172,7 +204,7 @@ PTR_WEIBO_ENTITY show_single_weibo_byid(const char* access_token, const char* we
   return weibo;
 }
 
-PTR_WEIBO_ENTITY show_multiple_weibo_byids(const char* access_token, const char** weibo_ids, uint32_t count)
+PTR_WEIBO_ENTITY show_multiple_weibo_byids(const char* access_token, char** weibo_ids, uint32_t count)
 {
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, "spd", access_token, weibo_ids, count);
@@ -180,6 +212,8 @@ PTR_WEIBO_ENTITY show_multiple_weibo_byids(const char* access_token, const char*
   uint32_t i = 0;
   uint32_t cnt = count>MAX_BATCH_SIZE?MAX_BATCH_SIZE:count;
   cJSON* root = NULL;
+  cJSON* statuses = NULL;
+  PTR_WEIBO_ENTITY list_head = NULL;
   PTR_WEIBO_ENTITY weibo = NULL;
   PTR_HTTP_REQUEST request = alloc_http_request(2, 0, 0, 0);
   PTR_HTTP_RESPONSE response = NULL;
@@ -189,7 +223,7 @@ PTR_WEIBO_ENTITY show_multiple_weibo_byids(const char* access_token, const char*
   for (i=1; i<cnt; i++) {
     sprintf(s, "%s,%s", s, weibo_ids[i]);
   }
-  s[strelen(s)] = '\0';
+  s[strlen(s)] = '\0';
 
   request->params[0].name = "access_token";
   request->params[0].value = access_token;
@@ -198,11 +232,15 @@ PTR_WEIBO_ENTITY show_multiple_weibo_byids(const char* access_token, const char*
 
   response = https_get(WEIBO_SHOW_WEIBO_BATCH_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return NULL;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return NULL;
   }
@@ -249,11 +287,15 @@ PTR_WEIBO_ENTITY get_user_timeline_byids(const char* access_token, const char* u
 
   response = https_get(WEIBO_GET_USER_TIMELINE_IDS_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return NULL;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return NULL;
   }
@@ -289,13 +331,17 @@ PTR_WEIBO_ENTITY get_friend_timeline_byids(const char* access_token, int page)
   request->params[1].name="page";
   request->params[1].value=s;
 
-  response = https_get(WEIBO_GET_FIEND_TIMELINE_IDS_URL, request);
+  response = https_get(WEIBO_GET_FRIEND_TIMELINE_IDS_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return NULL;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return NULL;
   }
@@ -338,11 +384,15 @@ PTR_WEIBO_ENTITY get_user_timeline_byname(const char* access_token, const char* 
 
   response = https_get(WEIBO_GET_USER_TIMELINE_IDS_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return NULL;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return NULL;
   }
@@ -384,10 +434,14 @@ PTR_WEIBO_ENTITY get_public_timeline(const char* access_token, int page)
 
   response = https_get(WEIBO_GET_PUBLIC_TIMELINE_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return NULL;
   }
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return NULL;
   }
@@ -433,11 +487,15 @@ PTR_WEIBO_ENTITY get_friend_timeline(const char* access_token, int page)
 
   response = https_get(WEIBO_GET_FRIEND_TIMELINE_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return NULL;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return NULL;
   }
@@ -482,11 +540,15 @@ PTR_WEIBO_ENTITY get_home_timeline(const char* access_token, int page)
 
   response = https_get(WEIBO_GET_HOME_TIMELINE_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return NULL;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return NULL;
   }
@@ -533,11 +595,15 @@ PTR_WEIBO_ENTITY get_user_timeline(const char* access_token, const char* uid, in
 
   response = https_get(WEIBO_GET_USER_TIMELINE_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return NULL;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return NULL;
   }
@@ -582,11 +648,15 @@ PTR_WEIBO_ENTITY get_self_timeline(const char* access_token, int page)
 
   response = https_get(WEIBO_GET_USER_TIMELINE_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return NULL;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return NULL;
   }

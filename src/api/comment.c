@@ -32,14 +32,21 @@ BOOL create_comment(const char *access_token, const char *weibo_id, const char *
   sprintf((char*)(request->body), "access_token=%s&id=%s&comment=%s", access_token, weibo_id, comment);
   response = https_post(WEIBO_CREATE_COMMENT_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return False;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return False;
   }
+  free_http_request(request);
+  free_http_response(response);
+  cJSON_Delete(root);
   debug_log_exit(FINE, func_name);
 
   return True;
@@ -64,14 +71,21 @@ BOOL destroy_comment(const char *access_token, const char *comment_id)
   sprintf((char*)(request->body), "access_token=%s&comment_id=%s", access_token, comment_id);
   response = https_post(WEIBO_DESTROY_COMMENT_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return False;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return False;
   }
+  free_http_request(request);
+  free_http_response(response);
+  cJSON_Delete(root);
   debug_log_exit(FINE, func_name);
   return True;
 
@@ -101,20 +115,27 @@ BOOL reply_comment(const char *access_token, const char *weibo_id, const char *c
   sprintf((char*)(request->body), "access_token=%s&id=%s&cid=&comment=%s", access_token, weibo_id, comment_id, comment);
   response = https_post(WEIBO_REPLY_COMMENT_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return False;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return False;
   }
+  free_http_request(request);
+  free_http_response(response);
+  cJSON_Delete(root);
   debug_log_exit(FINE, func_name);
   return True;
 
 }
 
-PTR_COMMENT_ENTITY show_comments(const char *access_token, const char *weibo_id, int page)
+PTR_COMMENT_ENTITY show_comment(const char *access_token, const char *weibo_id, int page)
 {
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, "ssd", access_token, weibo_id, page);
@@ -135,11 +156,15 @@ PTR_COMMENT_ENTITY show_comments(const char *access_token, const char *weibo_id,
 
   response = https_get(WEIBO_SHOW_COMMENTS_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return NULL;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return NULL;
   }

@@ -33,9 +33,9 @@
 #define WEIBO_SHOW_USER_URL "https://api.weibo.com/2/users/show.json"
 #define WEIBO_SHOW_USER_RANK_URL "https://api.weibo.com/2/users/show_rank.json"
 
-#define WEIBO_GET_FOLLOWERS_URL "https://api.weibo.com/2/friendships/followers.json"
-#define WEIBO_GET_FOLLOWERS_IDS_URL "https://api.weibo.com/2/friendships/followers/ids.json"
-#define WEIBO_GET_FRIENDS_URL "https://api.weibo.com/2/friendships/friends.json"
+#define WEIBO_GET_FOLLOWER_URL "https://api.weibo.com/2/friendships/followers.json"
+#define WEIBO_GET_FOLLOWER_IDS_URL "https://api.weibo.com/2/friendships/followers/ids.json"
+#define WEIBO_GET_FRIEND_URL "https://api.weibo.com/2/friendships/friends.json"
 #define WEIBO_CREATE_FRIEND_URL "https://api.weibo.com/2/friendships/create.json"
 #define WEIBO_DESTROY_FRIEND_URL "https://api.weibo.com/2/friendships/destroy.json"
 

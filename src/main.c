@@ -22,7 +22,13 @@ char* ACCOUNTID = NULL;
 char* FRIENDID = NULL;
 const char* AUTH_FILENAME = "/home/pi/weicoPi/config/authorization_code";
 uint32_t PAGE = 1;       /* start with page #1 */
+uint32_t COMMENT_PAGE = 1;
+uint32_t NEXT_FRIEND_CURSOR = 0;
+uint32_t PREVIOUS_FRIEND_CURSOR = 0;
+uint32_t NEXT_FOLLOWER_CURSOR = 0;
+uint32_t PREVIOUS_FOLLOWER_CURSOR = 0;
 uint32_t WEIBO_TYPE = 0; /* 0 --  public timeline; 1 -- user timeline; 2 -- friend timeline*/
+char COMMENT_WEIBO_ID[30];
 
 void main(int argc, char *argv[])
 {
@@ -40,19 +46,10 @@ void main(int argc, char *argv[])
   memset((void*)FRIENDID, 0, 20*sizeof(char));
   memset((void*)ACCOUNTID, 0, 20*sizeof(char));
  
-  sprintf(USERID, "%ld", get_account_userid(ACCESS_TOKEN));
+  sprintf(ACCOUNTID, "%ld", get_account_userid(ACCESS_TOKEN));
   PTR_WND_MANAGER wm_mgr = wm_init();
-  /*  weibo_wnd = wnd_init(wm_mgr, NULL, "weibo", wm_mgr->height-2, wm_mgr->width/2, 0, 0);
-  weibo_wnd->handler = wnd_weibo_handler;
-  weibo_wnd->initializer = wnd_weibo_initializer;
-  weibo_wnd->destroyer = wnd_weibo_destroyer;
-  weibo_wnd->show = wnd_generic_refresh;
-  weibo_wnd->initializer(weibo_wnd);
-  weibo_wnd->show(wm_mgr, weibo_wnd, NULL);*/
   weibo_wnd = wnd_weibo_create(wm_mgr, NULL, wm_mgr->height-2, wm_mgr->width/2, 0, 0);
   weibo_wnd->show(wm_mgr, weibo_wnd, weibo_wnd->children);
-  p = wnd_popinput(wm_mgr, 2, 50);
-  wnd_alert(wm_mgr, p);
   /*  refresh();*/
   wm_runloop(wm_mgr);
   free((void*)ACCESS_TOKEN);

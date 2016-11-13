@@ -27,6 +27,7 @@ typedef struct weibo_entity {
 typedef struct comment_entity {
   char *created_at;
   uint64_t id;
+  char *idstr;
   char *mid;
   char *text;
   char *source;

@@ -59,15 +59,20 @@ void wnd_popinput_refresh(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data)
 
 void wnd_popinput_destroyer(PTR_WND self)
 {
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, NULL);
   PTR_WND child = self->children;
   werase(child->curses_wnd);
+  wrefresh(child->curses_wnd);
   delwin(child->curses_wnd);
   free(child);
   free(self->title);
   werase(self->curses_wnd);
+  wrefresh(self->curses_wnd);
   delwin(self->curses_wnd);
   free(self->user_data);
   free(self);
+  debug_log_exit(FINE, func_name);
 }
 
 void wnd_popinput_initializer(PTR_WND self)
@@ -107,7 +112,7 @@ char* wnd_popinput(PTR_WND_MANAGER wm_mgr, uint32_t height, uint32_t width)
   debug_log_enter(FINE, func_name, NULL);
   EVENT event;
   char* p = NULL;
-  PTR_WND wnd = wnd_popinput_create(wm_mgr, NULL, height, width, (wm_mgr->height-height)/2, (wm_mgr->width-width)/2);
+  PTR_WND wnd = wnd_popinput_create(wm_mgr, NULL, height, width, (wm_mgr->height-height-2-1), 0/*(wm_mgr->width-width)/2*/);
   wnd->show(wm_mgr, wnd, NULL);
   wgetnstr(wnd->children->curses_wnd, (char*)wnd->user_data, height*width/2);
   debug_log(FINE, func_name, (char*)wnd->user_data);

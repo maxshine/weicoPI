@@ -23,12 +23,15 @@ uint64_t get_account_userid(const char* access_token)
 	request->params[0].value = access_token;
 	response = https_get(WEIBO_GET_ACCOUNTID_URL, request);
 	if (response->status_code != 200) {
+	  free_http_request(request);
+	  free_http_response(response);
 	  return 0;
 	}
 
 	root = cJSON_Parse((char*)(response->body));
 	uid = (uint64_t) cJSON_GetObjectItem(root, "uid")->valuedouble;
-
+	free_http_request(request);
+	free_http_response(response);
 	cJSON_Delete(root);
         debug_log_exit(FINE, func_name);
         return uid;

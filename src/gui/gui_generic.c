@@ -83,6 +83,8 @@ void wnd_generic_fillup(PTR_WND self, uint32_t y, uint32_t x, char c)
 
 void wnd_generic_destroyer(PTR_WND self)
 {
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, NULL);
   PTR_WND child = self->children;
   while (child) {
     if (child->destroyer) {
@@ -94,8 +96,10 @@ void wnd_generic_destroyer(PTR_WND self)
     free(self->user_data);
   }
   werase(self->curses_wnd);
+  wrefresh(self->curses_wnd);
   delwin(self->curses_wnd);
   free(self->title);
+  debug_log_exit(FINE, func_name);
 }
 
 void wnd_generic_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVENT event)

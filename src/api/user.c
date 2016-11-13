@@ -28,11 +28,15 @@ PTR_USER_ENTITY show_user_byid(const char* access_token, const char* uid)
   
   response = https_get(WEIBO_SHOW_USER_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return NULL;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return NULL;
   }
@@ -62,11 +66,15 @@ PTR_USER_ENTITY show_user_byname(const char* access_token, const char* screen_na
 
   response = https_get(WEIBO_SHOW_USER_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return NULL;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return NULL;
   }
@@ -96,10 +104,14 @@ uint32_t show_user_rank(const char* access_token, const char* uid)
 
   response = https_get(WEIBO_SHOW_USER_RANK_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return 0;
   }
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return 0;
   }
@@ -110,4 +122,3 @@ uint32_t show_user_rank(const char* access_token, const char* uid)
   debug_log_exit(FINE, func_name);
   return rank;
 }
-

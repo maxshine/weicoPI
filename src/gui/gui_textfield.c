@@ -126,14 +126,19 @@ void wnd_textfield_refresh(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data)
 
 void wnd_textfield_destroyer(PTR_WND self)
 {
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, NULL);
   PTR_WND child = self->children;
   werase(child->curses_wnd);
+  wrefresh(child->curses_wnd);
   delwin(child->curses_wnd);
   free(child);
   free(self->title);
   werase(self->curses_wnd);
+  wrefresh(self->curses_wnd);
   delwin(self->curses_wnd);
   free(self);
+  debug_log_exit(FINE, func_name);
 }
 
 void wnd_textfield_initializer(PTR_WND self)

@@ -11,8 +11,12 @@
 #include "debug_util.h"
 #include "weibo_util.h"
 
+extern uint32_t NEXT_FRIEND_CURSOR;
+extern uint32_t PREVIOUS_FRIEND_CURSOR;
+extern uint32_t NEXT_FOLLOWER_CURSOR;
+extern uint32_t PREVIOUS_FOLLOWER_CURSOR;
 
-PTR_USER_ENTITY get_friends_byid(const char* access_token, const char* uid, int cursor)
+PTR_USER_ENTITY get_friend_byid(const char* access_token, const char* uid, int cursor)
 {
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, "ss", access_token, uid);
@@ -31,7 +35,7 @@ PTR_USER_ENTITY get_friends_byid(const char* access_token, const char* uid, int 
   snprintf(s, 20, "%d", cursor);
   request->params[2].value = s;
 
-  response = https_get(WEIBO_GET_FOLLOWERS_URL, request);
+  response = https_get(WEIBO_GET_FRIEND_URL, request);
   if (response->status_code != 200) {
     return NULL;
   }
@@ -53,6 +57,9 @@ PTR_USER_ENTITY get_friends_byid(const char* access_token, const char* uid, int 
     list_head = friend;
   }
 
+  NEXT_FRIEND_CURSOR = cJSON_GetObjectItem(root, "next_cursor")->valueint;
+  PREVIOUS_FRIEND_CURSOR = cJSON_GetObjectItem(root, "previous_cursor")->valueint;
+
   free_http_request(request);
   free_http_response(response);
   cJSON_Delete(root);
@@ -61,7 +68,7 @@ PTR_USER_ENTITY get_friends_byid(const char* access_token, const char* uid, int 
 
 }
 
-PTR_USER_ENTITY get_friends_byname(const char* access_token, const char* screen_name, int cursor)
+PTR_USER_ENTITY get_friend_byname(const char* access_token, const char* screen_name, int cursor)
 {
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, "ss", access_token, screen_name);
@@ -80,13 +87,17 @@ PTR_USER_ENTITY get_friends_byname(const char* access_token, const char* screen_
   snprintf(s, 20, "%d", cursor);
   request->params[2].value = s;
 
-  response = https_get(WEIBO_GET_FOLLOWERS_URL, request);
+  response = https_get(WEIBO_GET_FRIEND_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return NULL;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return NULL;
   }
@@ -102,6 +113,9 @@ PTR_USER_ENTITY get_friends_byname(const char* access_token, const char* screen_
     list_head = friend;
   }
 
+  NEXT_FRIEND_CURSOR = cJSON_GetObjectItem(root, "next_cursor")->valueint;
+  PREVIOUS_FRIEND_CURSOR = cJSON_GetObjectItem(root, "previous_cursor")->valueint;
+
   free_http_request(request);
   free_http_response(response);
   cJSON_Delete(root);
@@ -110,7 +124,7 @@ PTR_USER_ENTITY get_friends_byname(const char* access_token, const char* screen_
 
 }
 
-PTR_USER_ENTITY get_followers_byid(const char* access_token, const char* uid, int cursor)
+PTR_USER_ENTITY get_follower_byid(const char* access_token, const char* uid, int cursor)
 {
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, "ss", access_token, uid);
@@ -129,13 +143,17 @@ PTR_USER_ENTITY get_followers_byid(const char* access_token, const char* uid, in
   snprintf(s, 20, "%d", cursor);
   request->params[2].value = s;
 
-  response = https_get(WEIBO_GET_FOLLOWERS_URL, request);
+  response = https_get(WEIBO_GET_FOLLOWER_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return NULL;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return NULL;
   }
@@ -151,6 +169,9 @@ PTR_USER_ENTITY get_followers_byid(const char* access_token, const char* uid, in
     list_head = follower;
   }
 
+  NEXT_FOLLOWER_CURSOR = cJSON_GetObjectItem(root, "next_cursor")->valueint;
+  PREVIOUS_FOLLOWER_CURSOR = cJSON_GetObjectItem(root, "previous_cursor")->valueint;
+
   free_http_request(request);
   free_http_response(response);
   cJSON_Delete(root);
@@ -159,7 +180,7 @@ PTR_USER_ENTITY get_followers_byid(const char* access_token, const char* uid, in
 
 }
 
-PTR_USER_ENTITY get_followers_byname(const char* access_token, const char* screen_name, int cursor)
+PTR_USER_ENTITY get_follower_byname(const char* access_token, const char* screen_name, int cursor)
 {
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, "ss", access_token, screen_name);
@@ -178,13 +199,17 @@ PTR_USER_ENTITY get_followers_byname(const char* access_token, const char* scree
   snprintf(s, 20, "%d", cursor);
   request->params[2].value = s;
 
-  response = https_get(WEIBO_GET_FOLLOWERS_URL, request);
+  response = https_get(WEIBO_GET_FOLLOWER_URL, request);
   if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
     return NULL;
   }
 
   root = cJSON_Parse((char*)(response->body));
   if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
     cJSON_Delete(root);
     return NULL;
   }
@@ -199,6 +224,9 @@ PTR_USER_ENTITY get_followers_byname(const char* access_token, const char* scree
     }
     list_head = follower;
   }
+
+  NEXT_FOLLOWER_CURSOR = cJSON_GetObjectItem(root, "next_cursor")->valueint;
+  PREVIOUS_FOLLOWER_CURSOR = cJSON_GetObjectItem(root, "previous_cursor")->valueint;
 
   free_http_request(request);
   free_http_response(response);
