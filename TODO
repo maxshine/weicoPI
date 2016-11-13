@@ -31,15 +31,12 @@
  *  Author: Yang, Gao  <maxshine@gmail.com> 2013-on                         *
  ****************************************************************************/
 
-#include "weibo_datatype.h"
 
-#ifndef API_COMMENT_H
-
-#define API_COMMENT_H
-
-BOOL create_comment(const char *access_token, const char *weibo_id, const char *comment);
-BOOL destroy_comment(const char *access_token, const char *comment_id);
-BOOL reply_comment(const char *access_token, const char *weibo_id, const char *comment_id, const char *comment);
-PTR_COMMENT_ENTITY show_comment(const char *access_token, const char *weibo_id, int page);
-
-#endif
+2016/11/11 TODOS:
+- Fix KEY_DOWN issue when there is nothing to scroll down
+- Add Oauth2 when the app is started
+- Delve ncursesw issue when border is screwed
+- Add user / comment window
+- Add user list scroll and event handle
+- Add comment list scroll and event handle
+- Add Unit test code
