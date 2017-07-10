@@ -257,7 +257,7 @@ PTR_HTTP_RESPONSE http_get(char* url, PTR_HTTP_REQUEST request)
 PTR_HTTP_RESPONSE http_post(char* url, PTR_HTTP_REQUEST request)
 {
   const char* func_name= __func__;
-  debug_log_enter(FINE, func_name, NULL);
+  debug_log_enter(FINE, func_name, "s", url);
   int i = 0;
   char* sp = (char*) malloc(1024*sizeof(char));
   memset(sp, '\0', 1024*sizeof(char));
@@ -269,6 +269,14 @@ PTR_HTTP_RESPONSE http_post(char* url, PTR_HTTP_REQUEST request)
   PTR_HTTP_RESPONSE response = alloc_http_response(0, 0);
 
   curl_handler = curl_easy_init();
+  sprintf(sp, "%s", url);
+  for (i=0; i<request->params_qty; i++) {
+    if (i == 0 && strchr(sp, '?') == NULL) {
+      sprintf(sp, "%s?%s=%s", sp, request->params[i].name, request->params[i].value);
+    } else {
+      sprintf(sp, "%s&%s=%s", sp, request->params[i].name, request->params[i].value);
+    }
+  }
   curl_easy_setopt(curl_handler, CURLOPT_URL, url);
   curl_easy_setopt(curl_handler, CURLOPT_POST, 1L);
 
@@ -300,6 +308,7 @@ PTR_HTTP_RESPONSE http_post(char* url, PTR_HTTP_REQUEST request)
     }
     curl_easy_setopt(curl_handler, CURLOPT_HTTPPOST, post);
   }
+
   curl_easy_setopt(curl_handler, CURLOPT_WRITEFUNCTION, write_body);
   curl_easy_setopt(curl_handler, CURLOPT_WRITEDATA, response);
   curl_easy_setopt(curl_handler, CURLOPT_HEADERFUNCTION, parse_header);
@@ -362,7 +371,7 @@ PTR_HTTP_RESPONSE https_get(char* url, PTR_HTTP_REQUEST request)
 PTR_HTTP_RESPONSE https_post(char* url, PTR_HTTP_REQUEST request)
 {
   const char* func_name= __func__;
-  debug_log_enter(FINE, func_name, NULL);
+  debug_log_enter(FINE, func_name, "s", url);
   int i = 0;
   char* sp = (char*) malloc(1024*sizeof(char));
   memset(sp, '\0', 1024*sizeof(char));
@@ -374,7 +383,16 @@ PTR_HTTP_RESPONSE https_post(char* url, PTR_HTTP_REQUEST request)
   PTR_HTTP_RESPONSE response = alloc_http_response(0, 0);
 
   curl_handler = curl_easy_init();
-  curl_easy_setopt(curl_handler, CURLOPT_URL, url);
+  sprintf(sp, "%s", url);
+  for (i=0; i<request->params_qty; i++) {
+    if (i == 0 && strchr(sp, '?') == NULL) {
+      sprintf(sp, "%s?%s=%s", sp, request->params[i].name, request->params[i].value);
+    } else {
+      sprintf(sp, "%s&%s=%s", sp, request->params[i].name, request->params[i].value);
+    }
+  }
+  debug_log(FINEST, func_name, sp);
+  curl_easy_setopt(curl_handler, CURLOPT_URL, sp);
   curl_easy_setopt(curl_handler, CURLOPT_POST, 1L);
 
   curl_easy_setopt(curl_handler, CURLOPT_USE_SSL, CURLUSESSL_TRY);

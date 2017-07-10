@@ -83,6 +83,10 @@ void main(int argc, char *argv[])
   sprintf(PROGRAM_HOME, "%s%s", getpwuid(getuid())->pw_dir, "/.weicoPi/");
   sprintf(AUTH_FILENAME, "%s%s", PROGRAM_HOME, "authorization_key");
 
+  curl_global_init(CURL_GLOBAL_ALL); /* init cURL environment */
+  init_debug_log("weicoPi.log", LOG_LEVEL); /* init log */
+  PTR_WND_MANAGER wm_mgr = wm_init(); /* init curses environment */
+
   /* validate access token */
   if (stat(AUTH_FILENAME, &stat_buf) == 0) {
     ACCESS_TOKEN = get_access_token(AUTH_FILENAME);
@@ -95,14 +99,11 @@ void main(int argc, char *argv[])
   PTR_WND weibo_wnd = NULL;
   int i = 1;
   char* p = NULL;
-  curl_global_init(CURL_GLOBAL_ALL); /* init cURL environment */
-  init_debug_log("weicoPi.log", LOG_LEVEL); /* init log */
-  PTR_WND_MANAGER wm_mgr = wm_init(); /* init curses environment */
   if (! token_valid) {
-    p = (char*) malloc(sizeof(char)*100);
-    memset(p, '\0', sizeof(char)*100);
-    sprintf(p, "Access URL\n:%s?client_id=%s&redirecto_uri=%s&display=wap", APP_AUTHORIZE_URL, APP_KEY, APP_AUTH_REDIRECT_URL);
-    wnd_alert_w(wm_mgr,p);
+    p = (char*) malloc(sizeof(char)*300);
+    memset(p, '\0', sizeof(char)*300);
+    sprintf(p, "Access URL: %s?client_id=%s&redirecto_uri=%s&display=wap", APP_AUTHORIZE_URL, APP_KEY, APP_AUTH_REDIRECT_URL);
+    wnd_delay_alert(wm_mgr, p, 10);
     free(p);
     p = wnd_popinput(wm_mgr, 3, 50);
     put_access_token(AUTH_FILENAME, p);
@@ -115,7 +116,6 @@ void main(int argc, char *argv[])
   memset((void*)USERID, 0, 20*sizeof(char));
   memset((void*)FRIENDID, 0, 20*sizeof(char));
   memset((void*)ACCOUNTID, 0, 20*sizeof(char));
-  get_account_userid(ACCESS_TOKEN);
   sprintf(ACCOUNTID, "%ld", get_account_userid(ACCESS_TOKEN));
 
   weibo_wnd = wnd_weibo_create(wm_mgr, NULL, wm_mgr->height-2, wm_mgr->width/2, 0, 0);

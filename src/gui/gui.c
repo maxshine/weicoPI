@@ -133,16 +133,17 @@ void wm_pop(PTR_WND_MANAGER wm_mgr, void* data)
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, "p", data);
   PTR_WND wnd = (PTR_WND)data;
-  PTR_WND prev = NULL;
   PTR_WND current = wm_mgr->root_wnd_list;
-
+  PTR_WND prev = current;
   while(current !=NULL && current != wnd){
     prev = current;
     current = current->next;
   }
+
   if (current != NULL && current == wnd) {
     prev->next = current->next;
   }
+  
   if (current != NULL && current->next != NULL) {
     current->next->prev= prev;
   }

@@ -73,10 +73,29 @@ void wnd_alert_handler(PTR_WND_MANAGER wm_mgr, PTR_WND src, PTR_WND dst, PTR_EVE
   debug_log_exit(FINE, func_name);
 }
 
+void wnd_alert_addstr(PTR_WND self, uint8_t* str, uint32_t limit)
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, "ppd", self, str, limit);
+  cchar_t c;
+  uint8_t* p1 = str;
+  uint8_t offset = 0;
+  uint32_t i = 0;
+  memset(&c, 0, sizeof(c));
+
+  while(*p1 && i<limit) {
+    offset = fillup_cchar_utf8(p1, &c);
+    wadd_wch(self->children->curses_wnd, &c);
+    p1 = p1 + offset;
+    i = i + 1; /* hard code width of wide character */
+  }
+  debug_log_exit(FINE, func_name);
+}
+
 void wnd_alert_addstr_w(PTR_WND self, uint8_t* str, uint32_t limit)
 {
   const char* func_name = __func__;
-  debug_log_enter(FINE, func_name, NULL);
+  debug_log_enter(FINE, func_name, "ppd", self, str, limit);
   cchar_t c;
   uint8_t* p1 = str;
   uint8_t offset = 0;
@@ -115,10 +134,10 @@ void wnd_alert_fillup(PTR_WND self, char c, int attrs, short color_pair_number, 
 }
 
 /* data is a pointer to a attribute to be used */
-void wnd_alert_show(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data)
+void wnd_alert_show_w(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data)
 {
   const char* func_name = __func__;
-  debug_log_enter(FINE, func_name, NULL);
+  debug_log_enter(FINE, func_name, "pp", wm_mgr, self);
   werase(self->curses_wnd);
   //wborder(self->curses_wnd,ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
   werase(self->children->curses_wnd);
@@ -128,6 +147,28 @@ void wnd_alert_show(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data)
   }
   if (self->user_data != NULL) {
     wnd_alert_addstr_w(self, (uint8_t*)(self->user_data), self->children->height*self->children->width);
+  } else {
+    wnd_alert_fillup(self, ' ', -1, 0, NULL); /* no text, clear up field */
+  }
+  touchwin(self->children->curses_wnd);
+  wrefresh(self->children->curses_wnd);
+  touchwin(self->curses_wnd);
+  wrefresh(self->curses_wnd);
+  debug_log_exit(FINE, func_name);
+}
+
+void wnd_alert_show(PTR_WND_MANAGER wm_mgr, PTR_WND self, void* data)
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, "pp", wm_mgr, self);
+  werase(self->curses_wnd);
+  werase(self->children->curses_wnd);
+  if (data != NULL) {
+    wattrset(self->children->curses_wnd, *(int*)data);
+  }
+  if (self->user_data != NULL) {
+    //wnd_alert_addstr(self, (uint8_t*)(self->user_data), self->children->height*self->children->width);
+    waddstr(self->children->curses_wnd, (char*)(self->user_data));
   } else {
     wnd_alert_fillup(self, ' ', -1, 0, NULL); /* no text, clear up field */
   }
@@ -171,6 +212,21 @@ void wnd_alert_destroyer(PTR_WND self)
   debug_log_exit(FINE, func_name);
 }
 
+void wnd_alert_initializer_w(PTR_WND self)
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, NULL);
+  self->type = WT_ALERT;
+  self->children = NULL;
+  self->user_data = NULL; /* pointer to displayed txt, shallow */
+  self->initializer = wnd_alert_initializer_w;
+  self->destroyer = wnd_alert_destroyer;
+  self->handler = wnd_alert_handler;
+  self->show = wnd_alert_show_w;
+  self->wndrefresh = wnd_alert_refresh;
+  debug_log_exit(FINE, func_name);
+}
+
 void wnd_alert_initializer(PTR_WND self)
 {
   const char* func_name = __func__;
@@ -201,10 +257,25 @@ PTR_WND wnd_alert_create(PTR_WND_MANAGER wm_mgr, PTR_WND parent, uint32_t height
   return wnd;
 }
 
-void wnd_alert(PTR_WND_MANAGER wm_mgr, char* text)
+PTR_WND wnd_alert_create_w(PTR_WND_MANAGER wm_mgr, PTR_WND parent, uint32_t height, uint32_t width, uint32_t y, uint32_t x, uint8_t* text)
 {
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, NULL);
+  EVENT event;
+  char* p = NULL;
+  PTR_WND wnd = wnd_init(wm_mgr, parent, "alert", height, width, y, x);
+  wnd_alert_initializer_w(wnd);
+  wnd->user_data = text;
+  PTR_WND subwnd = wnd_init(wm_mgr, wnd, "alert text", height-2, width-4, 1, 2);
+  wnd_generic_initializer(subwnd);
+  debug_log_exit(FINE, func_name);
+  return wnd;
+}
+
+void wnd_alert(PTR_WND_MANAGER wm_mgr, char* text)
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, "ps", wm_mgr, text);
   uint32_t l = (uint32_t) strlen(text);
   uint32_t j = 0;
   l += 4;
@@ -217,12 +288,44 @@ void wnd_alert(PTR_WND_MANAGER wm_mgr, char* text)
 void wnd_alert_w(PTR_WND_MANAGER wm_mgr, uint8_t* text)
 {
   const char* func_name = __func__;
-  debug_log_enter(FINE, func_name, NULL);
+  debug_log_enter(FINE, func_name, "ps", wm_mgr, text);
   uint32_t l = (uint32_t) strlen(text);
   uint32_t j = 0;
   l += 4;
   j = l>50?50:l;
-  PTR_WND wnd = wnd_alert_create(wm_mgr, NULL, 2+(l/j)+1, j, (wm_mgr->height-4)/2, (wm_mgr->width-50)/2, text);
+  PTR_WND wnd = wnd_alert_create_w(wm_mgr, NULL, 2+(l/j)+1, j, (wm_mgr->height-4)/2, (wm_mgr->width-50)/2, text);
   wnd->show(wm_mgr, wnd, NULL);
+  debug_log_exit(FINE, func_name);
+}
+
+void wnd_delay_alert(PTR_WND_MANAGER wm_mgr, char* text, uint32_t seconds)
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, "psd", wm_mgr, text, seconds);
+  uint32_t l = (uint32_t) strlen(text);
+  uint32_t j = 0;
+  l += 4;
+  j = l>50?50:l;
+  PTR_WND wnd = wnd_alert_create(wm_mgr, NULL, 2+(l/j)+1, j, (wm_mgr->height-4)/2, (wm_mgr->width-50)/2, (uint8_t*)text);
+  wnd->show(wm_mgr, wnd, NULL);
+  sleep(seconds);
+  werase(wnd->curses_wnd);
+  wm_mgr->pop(wm_mgr, wnd);
+  debug_log_exit(FINE, func_name);
+}
+
+void wnd_delay_alert_w(PTR_WND_MANAGER wm_mgr, uint8_t* text, uint32_t seconds)
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, "psd", wm_mgr, text, seconds);
+  uint32_t l = (uint32_t) strlen(text);
+  uint32_t j = 0;
+  l += 4;
+  j = l>50?50:l;
+  PTR_WND wnd = wnd_alert_create_w(wm_mgr, NULL, 2+(l/j)+1, j, (wm_mgr->height-4)/2, (wm_mgr->width-50)/2, text);
+  wnd->show(wm_mgr, wnd, NULL);
+  sleep(seconds);
+  werase(wnd->curses_wnd);
+  wm_mgr->pop(wm_mgr, wnd);
   debug_log_exit(FINE, func_name);
 }
