@@ -102,7 +102,7 @@ void main(int argc, char *argv[])
   if (! token_valid) {
     p = (char*) malloc(sizeof(char)*300);
     memset(p, '\0', sizeof(char)*300);
-    sprintf(p, "Access URL: %s?client_id=%s&redirecto_uri=%s&display=wap", APP_AUTHORIZE_URL, APP_KEY, APP_AUTH_REDIRECT_URL);
+    sprintf(p, "Access URL: %s?client_id=%s&redirect_uri=%s&display=wap", APP_AUTHORIZE_URL, APP_KEY, APP_AUTH_REDIRECT_URL);
     wnd_delay_alert(wm_mgr, p, 10);
     free(p);
     p = wnd_popinput(wm_mgr, 3, 50);
