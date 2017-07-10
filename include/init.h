@@ -34,7 +34,8 @@
 #ifndef INIT_H
 #define INIT_H
 
-char* get_auth_code(const char* config_filename);
+char* get_access_token(const char* config_filename);
+char* put_access_token(const char* config_filename, const char* code);
 
 int deinit(void);
 

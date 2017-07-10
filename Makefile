@@ -14,7 +14,7 @@ vpath %.c $(SOURCEPATH)/http/:$(SOURCEPATH)/gui/:$(SOURCEPATH)/api/:$(SOURCEPATH
 vpath %.h $(MAINPATH)/include/
 vpath %.o $(MAINPATH)/build/
 
-objects := main.o gui.o gui_alert.o gui_popinput.o gui_textfield.o gui_generic.o gui_util.o init.o weibo.o comment.o user.o account.o friend.o cJSON.o weibo_util.o http_action.o http_util.o debug_util.o  
+objects := main.o gui.o gui_alert.o gui_popinput.o gui_textfield.o gui_generic.o gui_util.o weibo_oath2.o init.o weibo.o comment.o user.o account.o friend.o cJSON.o weibo_util.o http_action.o http_util.o debug_util.o  
 
 jsons := cJSON.h cJSON.c
 
@@ -24,7 +24,9 @@ http := http_action.h http_action.c http_util.h http_util.c
 
 common := constants.h $(debug) datatype.h weibo_datatype.h gui_datatype.h
 
-api := weibo.h weibo.c comment.h comment.c friend.h friend.c user.h user.c account.c account.h weibo_util.h weibo_util.c
+api := weibo_oath2.h weibo_oath2.c weibo.h weibo.c comment.h comment.c friend.h friend.c user.h user.c account.c account.h weibo_util.h weibo_util.c
+
+oath2 := weibo_oath2.h weibo_oath2.c
 
 util := init.h init.c
 
@@ -33,7 +35,7 @@ gui := gui.c gui.h gui_util.c gui_util.h gui_generic.c gui_generic.h gui_textfie
 weicoPi : $(objects)
 	cd $(OUTPATH);gcc $(LDFLAGS) $^ -o $(MAINPATH)/$@
 
-main.o : init.c init.h main.c $(api) $(common) $(gui)
+main.o : main.c $(util) $(oath2) $(api) $(common) $(gui)
 	gcc $(CFLAGS) $(SOURCEPATH)/main.c -o $(OUTPATH)/main.o
 
 gui.o : $(gui) $(api) $(common)
@@ -53,6 +55,9 @@ gui_generic.o : $(gui) $(common)
 
 gui_util.o : $(gui) $(common)
 	gcc $(CFLAGS) $(SOURCEPATH)/gui/gui_util.c -o $(OUTPATH)/gui_util.o
+
+weibo_oath2.o : $(oath2) $(common) $(json) $(http) 
+	gcc $(CFLAGS) $(SOURCEPATH)/api/weibo_oath2.c -o $(OUTPATH)/weibo_oath2.o 
 
 weibo.o : weibo.c weibo.h $(common) $(json) $(http) $(util)
 	gcc $(CFLAGS) $(SOURCEPATH)/api/weibo.c -o $(OUTPATH)/weibo.o 
@@ -81,7 +86,7 @@ http_util.o : http_util.c http_util.h constants.h
 cJSON.o : cJSON.h cJSON.c
 	gcc $(CFLAGS) $(SOURCEPATH)/cJSON/cJSON.c -o $(OUTPATH)/cJSON.o
 
-init.o : init.c init.h constants.h
+init.o : $(util) $(common)
 	gcc $(CFLAGS) $(SOURCEPATH)/util/init.c -o $(OUTPATH)/init.o
 
 weibo_util.o : weibo_util.h weibo_util.c $(cJSON) $(common)

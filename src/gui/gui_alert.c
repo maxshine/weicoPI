@@ -206,8 +206,10 @@ void wnd_alert(PTR_WND_MANAGER wm_mgr, char* text)
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, NULL);
   uint32_t l = (uint32_t) strlen(text);
+  uint32_t j = 0;
   l += 4;
-  PTR_WND wnd = wnd_alert_create(wm_mgr, NULL, 4, l>50?50:l, (wm_mgr->height-4)/2, (wm_mgr->width-50)/2, (uint8_t*)text);
+  j = l>50?50:l;
+  PTR_WND wnd = wnd_alert_create(wm_mgr, NULL, 2+(l/j)+1, j, (wm_mgr->height-4)/2, (wm_mgr->width-50)/2, (uint8_t*)text);
   wnd->show(wm_mgr, wnd, NULL);
   debug_log_exit(FINE, func_name);
 }
@@ -217,8 +219,10 @@ void wnd_alert_w(PTR_WND_MANAGER wm_mgr, uint8_t* text)
   const char* func_name = __func__;
   debug_log_enter(FINE, func_name, NULL);
   uint32_t l = (uint32_t) strlen(text);
+  uint32_t j = 0;
   l += 4;
-  PTR_WND wnd = wnd_alert_create(wm_mgr, NULL, 4, l>50?50:l, (wm_mgr->height-4)/2, (wm_mgr->width-50)/2, text);
+  j = l>50?50:l;
+  PTR_WND wnd = wnd_alert_create(wm_mgr, NULL, 2+(l/j)+1, j, (wm_mgr->height-4)/2, (wm_mgr->width-50)/2, text);
   wnd->show(wm_mgr, wnd, NULL);
   debug_log_exit(FINE, func_name);
 }

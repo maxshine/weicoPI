@@ -41,12 +41,16 @@
 #define APP_SECRET "fafbd170e8e9dd42f38214c64177f4be"
 #define APP_URL "http://twitter2weibo1.appspot.com"*/
 
-#define APP_KEY "4127323521"
-#define APP_AUTH_REDIRECT_URL "http://"
-#define APP_SECRET "e862110ed024b5938d71ecdee6d6d19f"
-#define APP_URL "http://twitter2weibo1.appspot.com"
 
-#define INIT_AUTHORIZE_URL "https://api.weibo.com/oauth2/authorize"
+#define APP_KEY "4127323521"
+#define APP_SECRET "e862110ed024b5938d71ecdee6d6d19f"
+#define APP_AUTH_REDIRECT_URL "https://api.weibo.com/oauth2/default.html"
+#define APP_URL "http://twitter2weibo1.appspot.com"
+#define APP_AUTHORIZE_URL "https://api.weibo.com/oauth2/authorize"
+#define APP_FETCH_TOKEN_URL "https://api.weibo.com/oauth2/access_token"
+#define APP_REVOKE_TOKEN_URL "https://api.weibo.com/oauth2/revokeoauth2"
+#define APP_GET_TOKEN_INFO_URL "https://api.weibo.com/oauth2/get_token_info"
+
 #define WEIBO_CREATE_URL "https://api.weibo.com/2/statuses/update.json"
 #define WEIBO_CREATE_UPLOAD_URL "https://upload.api.weibo.com/2/statuses/upload.json"
 #define WEIBO_REPOST_URL "https://api.weibo.com/2/statuses/repost.json"

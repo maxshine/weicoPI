@@ -34,18 +34,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "weibo_oath2.h"
 #include "datatype.h"
 #include "debug_util.h"
 
-char* get_auth_code(const char* config_filename)
+char* get_access_token(const char* config_filename)
 {
-	FILE* config_file_handle = fopen(config_filename, "r");
-	char* code = (char*) malloc(50*sizeof(char));
-	memset(code, '\0', 50*sizeof(char));
-	fgets(code, 50,  config_file_handle);
-	*(code+strlen(code)-1) = '\0';
-	fclose(config_file_handle);
-	return code;
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, "s", config_filename);
+  FILE* config_file_handle = fopen(config_filename, "r");
+  char* code = (char*) malloc(50*sizeof(char));
+  memset(code, '\0', 50*sizeof(char));
+  fgets(code, 50,  config_file_handle);
+  *(code+strlen(code)-1) = '\0';
+  fclose(config_file_handle);
+  debug_log_exit(FINE, func_name);
+  return code;
+}
+
+char* put_access_token(const char* config_filename, const char* code)
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, "ss", config_filename, code);
+  FILE* config_file_handle = fopen(config_filename, "w");
+  char token[100];
+  memset(token, '\0', sizeof(char)*100);
+  fetch_access_token(code, token);
+  debug_log(FINEST, func_name, token);
+  fputs(token, config_file_handle);
+  fflush(config_file_handle);
+  fclose(config_file_handle);
+  debug_log_exit(FINE, func_name);
+  return NULL;
 }
 
 int deinit(void)

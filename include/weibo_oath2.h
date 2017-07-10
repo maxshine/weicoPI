@@ -31,9 +31,14 @@
  *  Author: Yang, Gao  <maxshine@gmail.com> 2013-on                         *
  ****************************************************************************/
 
+#include "datatype.h"
+
 #ifndef WEIBO_OATH2_H
 #define WEIBO_OATH2_H
 
 char* get_authorize_code(char* buffer);
+BOOL revoke_access_token(const char* access_token);
+BOOL get_access_token_info(const char* access_token);
+char* fetch_access_token(const char* code, char* token);
 
 #endif

@@ -35,9 +35,14 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "http_util.h"
+#include "debug_util.h"
+#include <stdint.h>
+#include "cJSON.h"
+#include "datatype.h"
+#include "http_action.h"
 #include "constants.h"
 #include "debug_util.h"
+#include "weibo_util.h"
 
 char* get_authorize_code(char* buffer) 
 {
@@ -54,7 +59,7 @@ char* get_authorize_code(char* buffer)
 
 	curl = curl_easy_init();
 	post_data = curl_easy_escape(curl, data, strlen(data));
-	curl_easy_setopt(curl, CURLOPT_URL, INIT_AUTHORIZE_URL);
+	curl_easy_setopt(curl, CURLOPT_URL, APP_AUTHORIZE_URL);
 	curl_easy_setopt(curl, CURLOPT_POST, 1L);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(data));
@@ -70,4 +75,103 @@ char* get_authorize_code(char* buffer)
 	fclose(tmp_body_file);
 	fclose(tmp_header_file);
 	return buffer+13;
+}
+
+char* fetch_access_token(const char* code, char* token)
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, "sp", code, token);
+  cJSON* root = NULL;
+  PTR_HTTP_REQUEST request = alloc_http_request(5, 0, 0, 0);
+  PTR_HTTP_RESPONSE response = NULL;
+  request->params[0].name = "client_id";
+  request->params[0].value = APP_KEY;
+  request->params[1].name = "client_secret";
+  request->params[1].value = APP_SECRET;
+  request->params[2].name = "grant_type";
+  request->params[2].value = "authorization_code";
+  request->params[3].name = "code";
+  request->params[3].value = code;
+  request->params[4].name = "redirect_uri";
+  request->params[4].value = APP_AUTH_REDIRECT_URL;
+
+  response = https_post(APP_FETCH_TOKEN_URL, request);
+  if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
+    return NULL;
+  }
+
+  root = cJSON_Parse((char*)(response->body));
+  sprintf(token, "%s", cJSON_GetObjectItem(root, "access_token")->valuestring);
+
+  free_http_request(request);
+  free_http_response(response);
+  cJSON_Delete(root);
+  debug_log_exit(FINE, func_name);
+  return token;
+}
+
+BOOL revoke_access_token(const char* access_token)
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, "s", access_token);
+  cJSON* root = NULL;
+  PTR_HTTP_REQUEST request = alloc_http_request(1, 0, 0, 0);
+  PTR_HTTP_RESPONSE response = NULL;
+  request->params[0].name = "access_token";
+  request->params[0].value = access_token;
+
+  response = https_post(APP_REVOKE_TOKEN_URL, request);
+  if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
+    return False;
+  }
+
+  root = cJSON_Parse((char*)(response->body));
+  if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
+    cJSON_Delete(root);
+    return False;
+  }
+
+  free_http_request(request);
+  free_http_response(response);
+  cJSON_Delete(root);
+  debug_log_exit(FINE, func_name);
+  return True;
+}
+
+BOOL get_access_token_info(const char* access_token)
+{
+  const char* func_name = __func__;
+  debug_log_enter(FINE, func_name, "s", access_token);
+  cJSON* root = NULL;
+  PTR_HTTP_REQUEST request = alloc_http_request(1, 0, 0, 0);
+  PTR_HTTP_RESPONSE response = NULL;
+  request->params[0].name = "access_token";
+  request->params[0].value = access_token;
+
+  response = https_post(APP_GET_TOKEN_INFO_URL, request);
+  if (response->status_code != 200) {
+    free_http_request(request);
+    free_http_response(response);
+    return False;
+  }
+
+  root = cJSON_Parse((char*)(response->body));
+  if (check_api_error(root)) {
+    free_http_request(request);
+    free_http_response(response);
+    cJSON_Delete(root);
+    return False;
+  }
+
+  free_http_request(request);
+  free_http_response(response);
+  cJSON_Delete(root);
+  debug_log_exit(FINE, func_name);
+  return True;
 }
